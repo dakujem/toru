@@ -1,0 +1,48 @@
+{
+  "name": "dakujem/toru",
+  "description": "Iterable collections with ease. Lodash-style fluent wrapper, iteration primitives, aggregates, utilities.",
+  "keywords": [
+    "iterator",
+    "dash",
+    "collection"
+  ],
+  "license": "Unlicense",
+  "authors": [
+    {
+      "name": "Andrej Rypák",
+      "email": "xrypak@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^8.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Dakujem\\Toru\\": "src/"
+    }
+  },
+  "require-dev": {
+    "nette/tester": "^2.4.1"
+  },
+  "autoload-dev": {
+    "files": [
+      "tests/support/tests.bootstrap.php"
+    ],
+    "classmap": [
+      "tests/support"
+    ]
+  },
+  "scripts": {
+    "test": "@test:local",
+    "test:local": "@php vendor/nette/tester/src/tester tests -C --colors 1",
+    "test:ci": "tester tests"
+  },
+  "scripts-descriptions": {
+    "test": "Run application tests. (defaults to local tests)",
+    "test:local": "Run application tests with local configuration.",
+    "test:ci": "Run application tests, provide configuration options as needed."
+  },
+  "archive": {
+    "exclude": ["/tests", "/.github"]
+  }
+}
