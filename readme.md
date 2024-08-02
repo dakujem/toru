@@ -76,14 +76,14 @@ foreach ($mailingList as $emailAddress => $recipientName) {
 
 Task: Create a list of all files in a directory as `path => FileInfo` pairs without risk of running out of memory:
 ```php
-use Dakujem\Toru\Dash;
-
-$files = Dash::collect(
+$files = _dash(
         new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir))
     )                                                                   // recursively iterate over a dir
     ->filter(fn(\SplFileInfo $fileInfo) => !$fileInfo->isDir())         // reject directories
     ->reindex(fn(\SplFileInfo $fileInfo) => $fileInfo->getPathname());  // index by full file path
 ```
+Note that here we use global function `_dash`, which you may optionally define in your project.
+See the "Using a global alias" section below.
 
 
 ## Usage
@@ -629,6 +629,9 @@ You no longer need to import the `Dash` class.
 _dash($collection)->filter( /* ... */ )->map( /* ... */ )->toArray();
 ```
 
+> Take care when defining global function `_` or `__` as it may interfere with other functions
+> (e.g. Gettext extension) or common i8n function alias.
+
 
 ## Caveats
 
@@ -1072,13 +1075,10 @@ $images = $listImages($dir);
 
 And what if you could create equivalent generator like this...
 ```php
-$images =
-  Dash::collect(
-        new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir))
-    )                                                                               // recursively iterate over a dir
-    ->filter(fn(SplFileInfo $fileInfo) => !$fileInfo->isDir())                      // reject directories
-    ->filter(fn(SplFileInfo $fileInfo) => @getimagesize($fileInfo->getPathname()))  // accept only images (hacky)
-    ->reindex(fn(SplFileInfo $fileInfo) => $fileInfo->getPathname());               // key by the full file path
+$images = _dash(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir))) // recursively iterate over a dir
+    ->filter(fn(SplFileInfo $fileInfo) => !$fileInfo->isDir())                       // reject directories
+    ->filter(fn(SplFileInfo $fileInfo) => @getimagesize($fileInfo->getPathname()))   // accept only images (hacky)
+    ->reindex(fn(SplFileInfo $fileInfo) => $fileInfo->getPathname());                // key by the full file path
 ```
 
 It now depends on personal preference. Both will do the trick and be equally efficient.
