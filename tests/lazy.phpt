@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Dakujem\Toru\Dash;
+use Dakujem\Toru\Itera;
 use Tester\Assert;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -81,4 +82,20 @@ require_once __DIR__ . '/../vendor/autoload.php';
             $foo;
         }
     }, \Exception::class, 'Cannot traverse an already closed generator');
+})();
+
+(function () {
+    $tapCounter = 0;
+    $collection = Dash::collect(Itera::produce(fn() => rand()))->tap(function () use (&$tapCounter) {
+        $tapCounter += 1;
+    });
+    Assert::same(0, $tapCounter);
+    $i = 0;
+    foreach ($collection as $v) {
+        if ($i++ >= 4) {
+            break;
+        }
+        Assert::same($i, $tapCounter);
+    }
+    Assert::same(5, $tapCounter);
 })();
