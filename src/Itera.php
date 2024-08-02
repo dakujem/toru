@@ -167,6 +167,8 @@ final class Itera
      * Flips keys and values as in `array_flip`.
      * @see \array_flip()
      *
+     *      flip(['a' => 'Adam', 'b' => 'Betty']); // ['Adam' => 'a', 'Betty' => 'b']
+     *
      * Note that unlike the native `array_flip`,
      * this method does NOT restrict the possible value types because generators may yield any type of keys.
      */
@@ -429,6 +431,10 @@ final class Itera
      * WARNING: Unless limited, this will create an endless loop! Do not cast the iterator to array.
      * @see self::limit()
      * @see self::replicate()
+     *
+     * Note: If casting the result to array, `Itera::valuesOnly()` or `Itera::toArrayMerge()` will be useful,
+     * otherwise the overlapping indexes will result in unexpected values (no replication).
+     * @see self::valuesOnly()
      */
     public static function loop(iterable $input): iterable
     {
@@ -442,7 +448,8 @@ final class Itera
      *
      *     replicate([1,2,3], 2); // 1,2,3,1,2,3
      *
-     * Note: If casting the result to array, `Itera::valuesOnly()` will be useful, otherwise the indexes will be overwritten.
+     * Note: If casting the result to array, `Itera::valuesOnly()` or `Itera::toArrayMerge()` will be useful,
+     * otherwise the overlapping indexes will result in unexpected values (no replication).
      * @see self::valuesOnly()
      */
     public static function replicate(iterable $input, int $times): iterable
@@ -455,14 +462,19 @@ final class Itera
 
     /**
      * Returns an array.
+     * Preserves keys.
+     * Behaves like `array_replace` when overlapping keys occur.
      *
      * WARNING:
      *   If the input is a generator yielding multiple values with the same keys, those values will get overwritten!
+     *   The call behaves like `array_replace` for arrays.
      *   This might happen when chaining multiple arrays with numeric keys, for example.
-     *   Consider calling `values` first.
+     *   Consider calling `valuesOnly` first: `Itera::toArray(Itera::valuesOnly($input))`.
      * @see self::valuesOnly()
      *
-     *     Itera::toArray(Itera::valuesOnly($input))
+     * See the alternatives:
+     * @see self::toArrayMerge() behaves like array_merge
+     * @see self::toArrayValues() discards the keys
      */
     public static function toArray(iterable $input): array
     {
@@ -470,18 +482,10 @@ final class Itera
     }
 
     /**
-     * Returns an array of values contained in the iterable, ignoring all keys (indexes).
-     * This mitigates the issue with overlapping indexes when converting generic iterators.
-     */
-    public static function toArrayValues(iterable $input): array
-    {
-        return self::toArray(self::valuesOnly($input));
-    }
-
-    /**
-     * @experimental attempt to behave like array_merge
+     * Returns an array.
+     * Behaves like `array_merge` - it preserves associative keys and discards numeric keys.
+     * If associative keys overlap, the former values will be overwritten by the latter ones.
      * @link https://3v4l.org/e1mNY
-     * @internal not ready yet
      */
     public static function toArrayMerge(iterable $input): array
     {
@@ -503,6 +507,15 @@ final class Itera
             }
         }
         return $output;
+    }
+
+    /**
+     * Returns an array of values contained in the iterable, discarding all keys (indexes).
+     * This mitigates the issue with overlapping indexes.
+     */
+    public static function toArrayValues(iterable $input): array
+    {
+        return self::toArray(self::valuesOnly($input));
     }
 
     /**

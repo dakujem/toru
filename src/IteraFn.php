@@ -37,8 +37,8 @@ use Dakujem\Toru\Exceptions\BadMethodCallException;
  * @method static callable each(callable $effect) Alias for `tap`.
  *
  * @method static callable repeat() repeat the whole wrapped collection indefinitely
- * @method static callable loop() yield all elements of the wrapped collection indefinitely
- * @method static callable replicate(int $times) yield all elements of the wrapped collection exactly N times
+ * @method static callable loop() yield all elements of the wrapped collection indefinitely; watch out for key collisions (see toArrayMerge, valuesOnly)
+ * @method static callable replicate(int $times) yield all elements of the wrapped collection exactly N times; watch out for key collisions (see toArrayMerge, valuesOnly)
  *
  * @method static callable toIterator()
  * @method static callable ensureTraversable()

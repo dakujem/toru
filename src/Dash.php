@@ -44,8 +44,8 @@ use Traversable;
  * @method self each(callable $effect) Alias for `tap`.
  *
  * @method self repeat() repeat the whole wrapped collection indefinitely
- * @method self loop() yield all elements of the wrapped collection indefinitely
- * @method self replicate(int $times) yield all elements of the wrapped collection exactly N times
+ * @method self loop() yield all elements of the wrapped collection indefinitely; watch out for key collisions (see toArrayMerge, valuesOnly)
+ * @method self replicate(int $times) yield all elements of the wrapped collection exactly N times; watch out for key collisions (see toArrayMerge, valuesOnly)
  *
  * The following methods immediately iterate the collection and evaluate all decorators, returning a value.
  * @method array toArray() Preserves the original keys. Watch out for collisions.
