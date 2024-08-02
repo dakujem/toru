@@ -78,7 +78,7 @@ Task: Create a list of all files in a directory as `path => FileInfo` pairs with
 ```php
 use Dakujem\Toru\Dash;
 
-$files = Dash::wrap(
+$files = Dash::collect(
         new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir))
     )                                                                   // recursively iterate over a dir
     ->filter(fn(\SplFileInfo $fileInfo) => !$fileInfo->isDir())         // reject directories
@@ -516,7 +516,7 @@ use Dakujem\Toru\Dash;
 $mapper = fn($value, $key) => /* ... */;
 $predicate = fn($value, $key): bool => /* ... */;
 
-$collection = Dash::wrap($array)->map($mapper)->filter($predicate);
+$collection = Dash::collect($array)->map($mapper)->filter($predicate);
 ```
 
 With `array_reduce` this is even more convoluted, because there is no way to pass the keys to the native function.  
@@ -1073,10 +1073,12 @@ $images = $listImages($dir);
 And what if you could create equivalent generator like this...
 ```php
 $images =
-  Dash::wrap(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir)))  // recursively iterate over a dir
-    ->filter(fn(SplFileInfo $fileInfo) => !$fileInfo->isDir())                     // reject directories
-    ->filter(fn(SplFileInfo $fileInfo) => @getimagesize($fileInfo->getPathname())) // accept only images (hacky)
-    ->reindex(fn(SplFileInfo $fileInfo) => $fileInfo->getPathname());              // key by the full file path
+  Dash::collect(
+        new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir))
+    )                                                                               // recursively iterate over a dir
+    ->filter(fn(SplFileInfo $fileInfo) => !$fileInfo->isDir())                      // reject directories
+    ->filter(fn(SplFileInfo $fileInfo) => @getimagesize($fileInfo->getPathname()))  // accept only images (hacky)
+    ->reindex(fn(SplFileInfo $fileInfo) => $fileInfo->getPathname());               // key by the full file path
 ```
 
 It now depends on personal preference. Both will do the trick and be equally efficient.
