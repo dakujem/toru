@@ -29,8 +29,8 @@ use Dakujem\Toru\Exceptions\BadMethodCallException;
  * @method static callable apply(callable $values)
  * @method static callable reindex(callable $keys)
  * @method static callable unfold(callable $mapper)
- * @method static callable valuesOnly()
- * @method static callable keysOnly()
+ * @method static callable valuesOnly() Discards the keys (similar to `array_values`).
+ * @method static callable keysOnly() Returns only the keys (similar to `array_keys`).
  * @method static callable flip()
  *
  * @method static callable tap(callable $effect)
@@ -44,8 +44,9 @@ use Dakujem\Toru\Exceptions\BadMethodCallException;
  * @method static callable ensureTraversable()
  *
  * Callables returned from the following methods immediately iterate the collection and evaluate all decorators, returning a `mixed` value type.
- * @method static callable toArray() Preserves the original keys. Watch out for collisions.
- * @method static callable toArrayValues() Ignores the original keys.
+ * @method static callable toArray() Preserves the original keys. Watch out for overlapping keys (including numeric keys).
+ * @method static callable toArrayMerge() Discards the numeric keys and preserves the original associative keys. Emulates `array_merge` behaviour for overlapping keys.
+ * @method static callable toArrayValues() Discards the keys (similar to `array_values`).
  * @method static callable reduce(callable $reducer, mixed $initial = null) The reducer has signature `fn(mixed $carry, mixed $value, mixed $key): mixed`.
  * @method static callable search(callable $predicate)
  * @method static callable searchOrFail(callable $predicate)

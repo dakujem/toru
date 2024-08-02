@@ -36,8 +36,8 @@ use Traversable;
  * @method self apply(callable $values)
  * @method self reindex(callable $keys)
  * @method self unfold(callable $mapper)
- * @method self valuesOnly()
- * @method self keysOnly()
+ * @method self valuesOnly() Discards the keys (similar to `array_values`).
+ * @method self keysOnly() Returns only the keys (similar to `array_keys`).
  * @method self flip()
  *
  * @method self tap(callable $effect)
@@ -48,8 +48,9 @@ use Traversable;
  * @method self replicate(int $times) yield all elements of the wrapped collection exactly N times; watch out for key collisions (see toArrayMerge, valuesOnly)
  *
  * The following methods immediately iterate the collection and evaluate all decorators, returning a value.
- * @method array toArray() Preserves the original keys. Watch out for collisions.
- * @method array toArrayValues() Ignores the original keys.
+ * @method array toArray() Preserves the original keys. Watch out for overlapping keys (including numeric keys).
+ * @method array toArrayMerge() Discards the numeric keys and preserves the original associative keys. Emulates `array_merge` behaviour for overlapping keys.
+ * @method array toArrayValues() Discards the keys (similar to `array_values`).
  * @method self|mixed reduce(callable $reducer, mixed $initial = null) Reduce the collection to a value. If the resulting value is of iterable type, it is wrapped into a collection before being returned to allow for fluent chaining. Other values are returned unaltered. The signature of the reducer is `fn(mixed $carry, mixed $value, mixed $key): mixed`.
  * @method mixed search(callable $predicate)
  * @method mixed searchOrFail(callable $predicate)
