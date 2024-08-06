@@ -233,7 +233,21 @@ Itera::reduce(iterable $input, callable $reducer, mixed $initial): mixed
 
 The reducer signature is
 ```php
-fn(mixed $carry, mixed $value, mixed $key): mixed
+fn(mixed $carry, mixed $value, mixed $key): iterable|mixed
+```
+
+When using the `Dash::reduce` fluent call, the result is treated in two different ways:
+1. when an `iterable` value is returned, the result is wrapped into a new `Dash` instance to allow to continue the fluent call chain (useful for matrix reductions)
+2. when other `mixed` value type is returned, the result is returned as-is
+
+```php
+use Dakujem\Toru\Dash;
+
+// The value is returned directly, because it is not iterable:
+Dash::collect([1,2,3])->reduce(fn() => 42); // 42
+
+// The value `[42]` is iterable, thus a new `Dash` instance is returned:
+Dash::collect([1,2,3])->reduce(fn() => [42])->count(); // 1
 ```
 
 

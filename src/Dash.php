@@ -7,7 +7,6 @@ namespace Dakujem\Toru;
 use Dakujem\Toru\Exceptions\BadMethodCallException;
 use Iterator;
 use IteratorAggregate;
-use Traversable;
 
 /**
  * A wrapper for iterable collections that supports fluent decorations.
@@ -144,7 +143,7 @@ class Dash implements IteratorAggregate
         // if it returns any other value type it will be returned as-is.
         if ('reduce' === $name) {
             $reduction = Itera::{$name}($this->collection, ...$arguments);
-            return $reduction instanceof Traversable ? new static($reduction) : $reduction;
+            return is_iterable($reduction) ? new static($reduction) : $reduction;
         }
 
         // Alias for the `append` function.
