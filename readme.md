@@ -562,13 +562,17 @@ $result = Itera::reduce($array, $myActualReducer);
 
 ## Custom transformations
 
-To support custom transformation without interrupting a fluent chain when using `Dash`,
+To support custom transformation without interrupting a fluent call chain when using `Dash`,
 two methods are provided:
 
-- `Dash::alter` expects a decorator function returning an altered iterable collection
-- `Dash::aggregate` expects an aggregate function that immediately runs and terminates the fluent chain
+- `Dash::alter`
+  - expects a decorator function returning an altered iterable collection
+  - the iterable result is wrapped in a new `Dash` instance to continue the fluent call chain
+- `Dash::aggregate`
+  - expects an aggregate function that returns any value (`mixed`)
+  - terminates the fluent chain
 
-`Dash::alter` wraps the return value of the decorator into a new `Dash` instance, allowing to continue the call chain.
+`Dash::alter` wraps the return value of the decorator into a new `Dash` instance, allowing for fluent follow-up.
 
 ```php
 use Dakujem\Toru\Dash;
@@ -588,7 +592,7 @@ Dash::collect(['zero', 'one', 'two', 'three',])
     ->map( /* ... */ );
 ```
 
-`Dash::aggregate` returns any value produced by the callable parameter, without wrapping it into a new `Dash` instance.
+`Dash::aggregate` returns any value produced by the callable parameter, _without_ wrapping it into a new `Dash` instance.
 
 Missing a "key sum" function?
 ```php
@@ -602,15 +606,58 @@ $keySum = Dash::collect($input)
             $keySum += $k;
         }
         return $keySum;
-    });
+    }); // no more fluent calls, integer is returned
 ```
 
->
-> 💡
->
-> You may also extend the `Dash` class to implement custom transformations.  
-> For such uses the `Dash::$wrapperClass` static prop may be set, so that the `Dash::collect` function uses the extended class.
-> 
+
+## Extending Toru
+
+Extending the `Dash` class may be considered to implement custom transformations or aggregations to use within the fluent call chain.  
+The `Itera` and `IteraFn` classes may be extended for consistence with extension to `Dash`.
+
+```php
+use Dakujem\Toru\Dash;
+use Dakujem\Toru\Itera;
+
+class MyItera extends Itera
+{
+    public static function appendBar(iterable $input): iterable
+    {
+        return static::chain($input, ['bar' => 'bar']);
+    }
+}
+
+class MyDash extends Dash
+{
+    public function appendFoo(): self
+    {
+        return new static(
+            Itera::chain($this->collection, ['foo' => 'foo'])
+        );
+    }
+
+    public function appendBar(): self
+    {
+        return new static(
+            MyItera::appendBar($this->collection)
+        );
+    }
+
+    public function aggregateZero(): int
+    {
+        return 0; // ¯\_(ツ)_/¯ 
+    }
+}
+
+// 0 (zero)
+MyDash::collect([1, 2, 3])->appendFoo()->appendBar()->aggregateZero();
+
+// [1, 2, 3, 'foo' => 'foo', 'bar' => 'bar']
+MyDash::collect([1, 2, 3])->appendFoo()->appendBar()->toArray();
+
+// [1, 2, 3, 'foo' => 'foo', 'bar' => 'bar'] (generator)
+MyItera::appendBar([1, 2, 3]);
+```
 
 
 ## Using a global alias

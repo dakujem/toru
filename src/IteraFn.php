@@ -36,9 +36,9 @@ use Dakujem\Toru\Exceptions\BadMethodCallException;
  * @method static callable tap(callable $effect)
  * @method static callable each(callable $effect) Alias for `tap`.
  *
- * @method static callable repeat() repeat the whole wrapped collection indefinitely
- * @method static callable loop() yield all elements of the wrapped collection indefinitely; watch out for key collisions (see toArrayMerge, valuesOnly)
- * @method static callable replicate(int $times) yield all elements of the wrapped collection exactly N times; watch out for key collisions (see toArrayMerge, valuesOnly)
+ * @method static callable repeat() Repeat the whole wrapped collection indefinitely.
+ * @method static callable loop() Yield all elements of the wrapped collection indefinitely. Watch out for key collisions (see toArrayMerge, valuesOnly).
+ * @method static callable replicate(int $times) Yield all elements of the wrapped collection exactly N times. Watch out for key collisions (see toArrayMerge, valuesOnly).
  *
  * @method static callable toIterator()
  * @method static callable ensureTraversable()
@@ -58,7 +58,7 @@ use Dakujem\Toru\Exceptions\BadMethodCallException;
  *
  * @author Andrej Rypak <xrypak@gmail.com>
  */
-final class IteraFn
+class IteraFn
 {
     /**
      * This class may be extended and any of the methods may be implemented directly to change the default behaviour.
@@ -121,28 +121,34 @@ final class IteraFn
             return fn(iterable $input): mixed => Itera::{$name}($input, ...$arguments);
         }
 
-        $hint = null;
+        $hint = static::_hint($name, $arguments);
+        throw new BadMethodCallException(
+            sprintf('Invalid call to `%s::%s`.', static::class, $name) .
+            (null !== $hint ? ' ' . $hint : '')
+        );
+    }
+
+    protected static function _hint(string $name, array $arguments): ?string
+    {
         if (
             'make' === $name ||
             'produce' === $name
         ) {
-            $hint = 'The method is not supported in partially applied form.';
+            return 'The method is not supported in partially applied form.';
         }
         if ('values' === $name) {
-            $hint = sprintf('Did you mean `%s::%s`?', self::class, 'valuesOnly');
+            return sprintf('Did you mean `%s::%s`?', static::class, 'valuesOnly');
         }
         if ('keys' === $name) {
-            $hint = sprintf('Did you mean `%s::%s`?', self::class, 'keysOnly');
+            return sprintf('Did you mean `%s::%s`?', static::class, 'keysOnly');
         }
         if ('find' === $name || 'findOrDefault' === $name) {
-            $hint = sprintf('Did you mean `%s::%s`?', self::class, 'search');
+            return sprintf('Did you mean `%s::%s`?', static::class, 'search');
         }
         if ('findOrFail' === $name) {
-            $hint = sprintf('Did you mean `%s::%s`?', self::class, 'searchOrFail');
+            return sprintf('Did you mean `%s::%s`?', static::class, 'searchOrFail');
         }
-        throw new BadMethodCallException(
-            sprintf('Invalid call to `%s::%s`.', self::class, $name) .
-            (null !== $hint ? ' ' . $hint : '')
-        );
+
+        return null;
     }
 }

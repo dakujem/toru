@@ -22,35 +22,35 @@ use IteratorAggregate;
  *
  * The following methods decorate the wrapped iterable creating a new iterable object (a Generator in most cases),
  * returning a new wrapper instance containing the decorated iterable.
- * @method self chain(iterable ...$more) The chain method effectively appends one or more collections to the currently wrapped one.
- * @method self append(iterable ...$more) Alias for `chain`.
+ * @method self|static chain(iterable ...$more) The chain method effectively appends one or more collections to the currently wrapped one.
+ * @method self|static append(iterable ...$more) Alias for `chain`.
  *
- * @method self filter(callable $predicate)
- * @method self limit(int $limit)
- * @method self omit(int $omitted)
- * @method self slice(int $offset, int $limit)
+ * @method self|static filter(callable $predicate)
+ * @method self|static limit(int $limit)
+ * @method self|static omit(int $omitted)
+ * @method self|static slice(int $offset, int $limit)
  *
- * @method self adjust(?callable $values = null, ?callable $keys = null)
- * @method self map(callable $values) Alias for `apply`.
- * @method self apply(callable $values)
- * @method self reindex(callable $keys)
- * @method self unfold(callable $mapper)
- * @method self valuesOnly() Discards the keys (similar to `array_values`).
- * @method self keysOnly() Returns only the keys (similar to `array_keys`).
- * @method self flip()
+ * @method self|static adjust(?callable $values = null, ?callable $keys = null)
+ * @method self|static map(callable $values) Alias for `apply`.
+ * @method self|static apply(callable $values)
+ * @method self|static reindex(callable $keys)
+ * @method self|static unfold(callable $mapper)
+ * @method self|static valuesOnly() Discards the keys (similar to `array_values`).
+ * @method self|static keysOnly() Returns only the keys (similar to `array_keys`).
+ * @method self|static flip()
  *
- * @method self tap(callable $effect)
- * @method self each(callable $effect) Alias for `tap`.
+ * @method self|static tap(callable $effect)
+ * @method self|static each(callable $effect) Alias for `tap`.
  *
- * @method self repeat() repeat the whole wrapped collection indefinitely
- * @method self loop() yield all elements of the wrapped collection indefinitely; watch out for key collisions (see toArrayMerge, valuesOnly)
- * @method self replicate(int $times) yield all elements of the wrapped collection exactly N times; watch out for key collisions (see toArrayMerge, valuesOnly)
+ * @method self|static repeat() Repeat the whole wrapped collection indefinitely.
+ * @method self|static loop() Yield all elements of the wrapped collection indefinitely. Watch out for key collisions (see toArrayMerge, valuesOnly).
+ * @method self|static replicate(int $times) Yield all elements of the wrapped collection exactly N times. Watch out for key collisions (see toArrayMerge, valuesOnly).
  *
  * The following methods immediately iterate the collection and evaluate all decorators, returning a value.
  * @method array toArray() Preserves the original keys. Watch out for overlapping keys (including numeric keys).
  * @method array toArrayMerge() Discards the numeric keys and preserves the original associative keys. Emulates `array_merge` behaviour for overlapping keys.
  * @method array toArrayValues() Discards the keys (similar to `array_values`).
- * @method self|mixed reduce(callable $reducer, mixed $initial = null) Reduce the collection to a value. If the resulting value is of iterable type, it is wrapped into a collection before being returned to allow for fluent chaining. Other values are returned unaltered. The signature of the reducer is `fn(mixed $carry, mixed $value, mixed $key): mixed`.
+ * @method self|static|mixed reduce(callable $reducer, mixed $initial = null) Reduce the collection to a value. If the resulting value is of iterable type, it is wrapped into a collection before being returned to allow for fluent chaining. Other values are returned unaltered. The signature of the reducer is `fn(mixed $carry, mixed $value, mixed $key): mixed`.
  * @method mixed search(callable $predicate)
  * @method mixed searchOrFail(callable $predicate)
  * @method mixed firstValue()
@@ -63,18 +63,16 @@ use IteratorAggregate;
  */
 class Dash implements IteratorAggregate
 {
-    public static ?string $wrapperClass = null;
-
     public function __construct(
         protected iterable $collection,
     ) {
     }
 
-    public static function collect(iterable $collection): self
+    /**
+     * Creates and returns a new instance of self or any extending class (new static).
+     */
+    final public static function collect(iterable $collection): static
     {
-        if (null !== static::$wrapperClass) {
-            return new (static::$wrapperClass)($collection);
-        }
         return new static($collection);
     }
 
@@ -86,9 +84,10 @@ class Dash implements IteratorAggregate
     /**
      * Alter the collection as a whole using a decorator with signature `fn(iterable $collection):iterable`.
      * The result is wrapped into a new wrapper instance and returned.
-     * This is useful as an extension point, to implement decorations not directly provided by this wrapper.
+     * This is useful as an extension point, to implement decorations not directly provided
+     * by this wrapper without extending the class.
      */
-    public function alter(callable $decorator): self
+    final public function alter(callable $decorator): static
     {
         return new static(
             $decorator($this->collection)
@@ -103,7 +102,7 @@ class Dash implements IteratorAggregate
      *
      * This is a counterpart to the `alter` method that always wraps the result.
      */
-    public function aggregate(callable $aggregate): mixed
+    final public function aggregate(callable $aggregate): mixed
     {
         return $aggregate($this->collection);
     }
@@ -111,7 +110,7 @@ class Dash implements IteratorAggregate
     /**
      * Return the wrapped collection as-is.
      */
-    public function out(): iterable
+    final public function out(): iterable
     {
         return $this->collection;
     }
@@ -185,31 +184,36 @@ class Dash implements IteratorAggregate
             return $this;
         }
 
-        $hint = null;
+        $hint = static::_hint($name, $arguments);
+        throw new BadMethodCallException(
+            sprintf('Invalid call to `%s::%s`.', static::class, $name) .
+            (null !== $hint ? ' ' . $hint : '')
+        );
+    }
+
+    protected static function _hint(string $name, array $arguments): ?string
+    {
         if (
             'make' === $name ||
             'produce' === $name
         ) {
-            $hint = sprintf(
+            return sprintf(
                 'The method is not supported by the `%s` wrapper. Instead, call the static `%s::%s()` method, then wrap the result.',
                 static::class, Itera::class, $name,
             );
         }
         if ('values' === $name) {
-            $hint = sprintf('Did you mean `%s::%s`?', static::class, 'valuesOnly');
+            return sprintf('Did you mean `%s::%s`?', static::class, 'valuesOnly');
         }
         if ('keys' === $name) {
-            $hint = sprintf('Did you mean `%s::%s`?', static::class, 'keysOnly');
+            return sprintf('Did you mean `%s::%s`?', static::class, 'keysOnly');
         }
         if ('find' === $name || 'findOrDefault' === $name) {
-            $hint = sprintf('Did you mean `%s::%s`?', static::class, 'search');
+            return sprintf('Did you mean `%s::%s`?', static::class, 'search');
         }
         if ('findOrFail' === $name) {
-            $hint = sprintf('Did you mean `%s::%s`?', static::class, 'searchOrFail');
+            return sprintf('Did you mean `%s::%s`?', static::class, 'searchOrFail');
         }
-        $hint ??= sprintf('To include custom decorators in the chain, `%s::alter()` or `%s::aggregate()` may be used.', static::class, static::class);
-        throw new BadMethodCallException(
-            sprintf('Invalid call to `%s::%s`.', static::class, $name) . ' ' . $hint
-        );
+        return sprintf('To include custom decorators in the chain, `%s::alter()` or `%s::aggregate()` may be used.', static::class, static::class);
     }
 }

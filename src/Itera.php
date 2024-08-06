@@ -25,7 +25,7 @@ use Traversable;
  *
  * @author Andrej Rypák (dakujem) <xrypak@gmail.com>
  */
-final class Itera
+class Itera
 {
     /**
      * Creates a single iterable generator from multiple iterables.
@@ -39,7 +39,7 @@ final class Itera
      * @param iterable ...$input multiple iterables (arrays or iterators)
      * @return iterable a generator
      */
-    public static function chain(iterable ...$input): iterable
+    final public static function chain(iterable ...$input): iterable
     {
         foreach ($input as $iterable) {
             yield from $iterable;
@@ -58,7 +58,7 @@ final class Itera
      * @param callable|null $keys Calculates new keys;   signature `fn(mixed $value, mixed $key): mixed`
      * @return iterable Returns a generator, or the input unchanged.
      */
-    public static function adjust(iterable $input, ?callable $values = null, ?callable $keys = null): iterable
+    final public static function adjust(iterable $input, ?callable $values = null, ?callable $keys = null): iterable
     {
         if (null === $values && null === $keys) {
             // Map neither values nor keys.
@@ -93,7 +93,7 @@ final class Itera
      * @param callable $values Calculates new values; signature `fn(mixed $value, mixed $key): mixed`
      * @return iterable Returns a generator.
      */
-    public static function apply(iterable $input, callable $values): iterable
+    final public static function apply(iterable $input, callable $values): iterable
     {
         foreach ($input as $key => $value) {
             yield $key => $values($value, $key);
@@ -108,7 +108,7 @@ final class Itera
      * @param callable $keys Calculates new keys; signature `fn(mixed $value, mixed $key): mixed`
      * @return iterable Returns a generator.
      */
-    public static function reindex(iterable $input, callable $keys): iterable
+    final public static function reindex(iterable $input, callable $keys): iterable
     {
         foreach ($input as $key => $value) {
             yield $keys($value, $key) => $value;
@@ -120,7 +120,7 @@ final class Itera
      * This is an alias of the `apply` method:
      * @see self::apply()
      */
-    public static function map(iterable $input, callable $values): iterable
+    final public static function map(iterable $input, callable $values): iterable
     {
         return self::apply($input, $values);
     }
@@ -131,7 +131,7 @@ final class Itera
      *
      * Note: Equivalent to `iter\flatMap`, but with the addition of access to keys.
      */
-    public static function unfold(iterable $input, callable $mapper): iterable
+    final public static function unfold(iterable $input, callable $mapper): iterable
     {
         foreach ($input as $key => $value) {
             yield from $mapper($value, $key);
@@ -145,7 +145,7 @@ final class Itera
      * Useful for "chained" or repeated iterables containing elements with overlapping indexes.
      * @see self::chain()
      */
-    public static function valuesOnly(iterable $input): iterable
+    final public static function valuesOnly(iterable $input): iterable
     {
         foreach ($input as $key => $value) {
             yield $value;
@@ -156,7 +156,7 @@ final class Itera
      * Iterates over keys, ignoring values.
      * Similar to `array_keys`.
      */
-    public static function keysOnly(iterable $input): iterable
+    final public static function keysOnly(iterable $input): iterable
     {
         foreach ($input as $key => $value) {
             yield $key;
@@ -172,7 +172,7 @@ final class Itera
      * Note that unlike the native `array_flip`,
      * this method does NOT restrict the possible value types because generators may yield any type of keys.
      */
-    public static function flip(iterable $input): iterable
+    final public static function flip(iterable $input): iterable
     {
         foreach ($input as $key => $value) {
             yield $value => $key;
@@ -184,7 +184,7 @@ final class Itera
      *
      * Note: Equivalent to `iter\filter`.
      */
-    public static function filter(iterable $input, callable $predicate): iterable
+    final public static function filter(iterable $input, callable $predicate): iterable
     {
         // Note: Originally, this was implemented using CallbackFilterIterator, but changed later for consistency.
         // return new CallbackFilterIterator(self::toIterator($input), $predicate);
@@ -200,7 +200,7 @@ final class Itera
      *
      * Note: Equivalent to `iter\take`.
      */
-    public static function limit(iterable $input, int $limit): iterable
+    final public static function limit(iterable $input, int $limit): iterable
     {
         if ($limit <= 0) {
             return;
@@ -219,7 +219,7 @@ final class Itera
      *
      * Note: Equivalent to `iter\drop`.
      */
-    public static function omit(iterable $input, int $omit): iterable
+    final public static function omit(iterable $input, int $omit): iterable
     {
         $i = 0;
         foreach ($input as $key => $value) {
@@ -235,7 +235,7 @@ final class Itera
      *
      * Note: Equivalent to `iter\slice`.
      */
-    public static function slice(iterable $input, int $offset, int $limit): iterable
+    final public static function slice(iterable $input, int $offset, int $limit): iterable
     {
         return self::limit(self::omit($input, $offset), $limit);
     }
@@ -248,7 +248,7 @@ final class Itera
      *
      * @param callable $predicate signature `fn(mixed $value, mixed $key): bool`
      */
-    public static function search(iterable $input, callable $predicate, mixed $default = null): mixed
+    final public static function search(iterable $input, callable $predicate, mixed $default = null): mixed
     {
         try {
             return self::searchOrFail($input, $predicate);
@@ -264,7 +264,7 @@ final class Itera
      * @param callable $predicate signature `fn(mixed $value, mixed $key): bool`
      * @throws NoMatchingElementFound
      */
-    public static function searchOrFail(iterable $input, callable $predicate): mixed
+    final public static function searchOrFail(iterable $input, callable $predicate): mixed
     {
         foreach ($input as $key => $value) {
             if ($predicate($value, $key)) {
@@ -283,7 +283,7 @@ final class Itera
      *
      * @param callable $reducer signature fn(mixed $carry, mixed $value, mixed $key): mixed
      */
-    public static function reduce(iterable $input, callable $reducer, mixed $initial = null): mixed
+    final public static function reduce(iterable $input, callable $reducer, mixed $initial = null): mixed
     {
         $carry = $initial;
         foreach ($input as $key => $value) {
@@ -296,7 +296,7 @@ final class Itera
      * Returns the first value of an iterable.
      * @throws EmptyCollectionException for empty iterables
      */
-    public static function firstValue(iterable $input): mixed
+    final public static function firstValue(iterable $input): mixed
     {
         foreach ($input as $value) {
             return $value;
@@ -312,7 +312,7 @@ final class Itera
      * Note that this can indeed return `mixed`, because generators may yield keys of any type.
      * @noinspection PhpMixedReturnTypeCanBeReducedInspection
      */
-    public static function firstKey(iterable $input): mixed
+    final public static function firstKey(iterable $input): mixed
     {
         foreach ($input as $key => $value) {
             return $key;
@@ -325,7 +325,7 @@ final class Itera
      * Returns the first value of an iterable.
      * Returns the default for empty iterables.
      */
-    public static function firstValueOrDefault(iterable $input, mixed $default = null): mixed
+    final public static function firstValueOrDefault(iterable $input, mixed $default = null): mixed
     {
         foreach ($input as $value) {
             return $value;
@@ -337,7 +337,7 @@ final class Itera
      * Returns the first key of an iterable.
      * Returns the default for empty iterables.
      */
-    public static function firstKeyOrDefault(iterable $input, mixed $default = null): mixed
+    final public static function firstKeyOrDefault(iterable $input, mixed $default = null): mixed
     {
         foreach ($input as $key => $value) {
             return $key;
@@ -349,7 +349,7 @@ final class Itera
      * Counts the number of elements in an iterable collection.
      * For objects implementing `Countable` the `count` method implementation is used.
      */
-    public static function count(iterable $input): int
+    final public static function count(iterable $input): int
     {
         // Since PHP 8.2 it _should_ be enough to call `iterator_count` for arrays.
         // However, the native `count` function will invoke `Countable::count` implementation for countable objects.
@@ -363,7 +363,7 @@ final class Itera
      *
      * Note: Equivalent to `iter\tap`.
      */
-    public static function tap(iterable $input, callable $effect): iterable
+    final public static function tap(iterable $input, callable $effect): iterable
     {
         foreach ($input as $key => $value) {
             $effect($value, $key);
@@ -375,7 +375,7 @@ final class Itera
      * Alias of `tap`.
      * @see self::tap()
      */
-    public static function each(iterable $input, callable $effect): iterable
+    final public static function each(iterable $input, callable $effect): iterable
     {
         return self::tap($input, $effect);
     }
@@ -384,7 +384,7 @@ final class Itera
      * Produces a generator that iterates over the given arguments.
      * In most cases, an array will be more efficient, except when an iterator type is needed.
      */
-    public static function make(mixed ...$input): Iterator
+    final public static function make(mixed ...$input): Iterator
     {
         yield from $input;
     }
@@ -396,7 +396,7 @@ final class Itera
      * WARNING: Unless limited, this will create an endless loop! Do not cast the iterator to array.
      * @see self::limit()
      */
-    public static function produce(callable $producer): iterable
+    final public static function produce(callable $producer): iterable
     {
         $i = 0;
         while (true) {
@@ -416,7 +416,7 @@ final class Itera
      * WARNING: Unless limited, this will create an endless loop! Do not cast the iterator to array.
      * @see self::limit()
      */
-    public static function repeat(mixed $input): iterable
+    final public static function repeat(mixed $input): iterable
     {
         while (true) {
             yield $input;
@@ -436,7 +436,7 @@ final class Itera
      * otherwise the overlapping indexes will result in unexpected values (no replication).
      * @see self::valuesOnly()
      */
-    public static function loop(iterable $input): iterable
+    final public static function loop(iterable $input): iterable
     {
         while (true) {
             yield from $input;
@@ -452,7 +452,7 @@ final class Itera
      * otherwise the overlapping indexes will result in unexpected values (no replication).
      * @see self::valuesOnly()
      */
-    public static function replicate(iterable $input, int $times): iterable
+    final public static function replicate(iterable $input, int $times): iterable
     {
         $times = max(0, $times);
         while ($times-- > 0) {
@@ -476,7 +476,7 @@ final class Itera
      * @see self::toArrayMerge() behaves like array_merge
      * @see self::toArrayValues() discards the keys
      */
-    public static function toArray(iterable $input): array
+    final public static function toArray(iterable $input): array
     {
         return is_array($input) ? $input : iterator_to_array($input);
     }
@@ -487,7 +487,7 @@ final class Itera
      * If associative keys overlap, the former values will be overwritten by the latter ones.
      * @link https://3v4l.org/e1mNY
      */
-    public static function toArrayMerge(iterable $input): array
+    final public static function toArrayMerge(iterable $input): array
     {
         if (is_array($input)) {
             return $input;
@@ -517,7 +517,7 @@ final class Itera
      * Returns an array of values contained in the iterable, discarding all keys (indexes).
      * This mitigates the issue with overlapping indexes.
      */
-    public static function toArrayValues(iterable $input): array
+    final public static function toArrayValues(iterable $input): array
     {
         return self::toArray(self::valuesOnly($input));
     }
@@ -526,7 +526,7 @@ final class Itera
      * Returns an iterator.
      * Always returns a new instance of an iterator, even if the input is an iterator already.
      */
-    public static function toIterator(iterable $input): Iterator
+    final public static function toIterator(iterable $input): Iterator
     {
         return is_array($input) ? new ArrayIterator($input) : new IteratorIterator($input);
     }
@@ -535,7 +535,7 @@ final class Itera
      * Ensures the output is a Traversable object.
      * If the input is such an object already, it is returned as-is.
      */
-    public static function ensureTraversable(iterable $input): Traversable
+    final public static function ensureTraversable(iterable $input): Traversable
     {
         return is_array($input) ? new ArrayIterator($input) : $input;
     }
