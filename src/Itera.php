@@ -496,8 +496,8 @@ final class Itera
         foreach ($input as $key => $value) {
             if (
                 is_int($key) ||
-                is_bool($key) || // booleans are cast to integer 0 and 1; thus we consider them integers
-                (is_string($key) && is_numeric($key) && (string)(int)$key === $key) // this double conversion eliminates whitespace and float values in strings
+                is_bool($key) ||                                    // *1
+                (is_numeric($key) && (string)(int)$key === $key)    // *2
             ) {
                 // append (ignoring the key)
                 $output[] = $value;
@@ -505,6 +505,10 @@ final class Itera
                 // (over)write
                 $output[$key] = $value;
             }
+            // Dev notes:
+            // *1/ booleans are cast to integer 0 and 1 when used as array keys; thus we consider them numeric
+            // *2/ this double conversion to int and back to string eliminates keys with whitespace and float values in strings;
+            //     this emulates what PHP does - keys like "1 " or "2.3" are considered associative and not numeric
         }
         return $output;
     }
