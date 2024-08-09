@@ -14,7 +14,7 @@ The package name comes from Japanese word "toru" (取る), which may mean "to ta
 
 Toru provides a few common **iteration primitives** (e.g. `map`, `filter`, `tap`),
 **aggregates** (e.g. `reduce`, `search`, `count`)
-and utility functions (e.g. `chain`) implemented using generators or efficient iterations.
+and utility functions (e.g. `chain`) implemented using generators.
 
 Also implements **Lodash-style fluent wrapper** to simplify composition of various transformations on iterable collections.
 
@@ -51,7 +51,7 @@ use Dakujem\Toru\Itera;
 $all = Itera::chain($collection1, $collection2, [12,3,5], $otherCollection);
 
 foreach ($all as $key => $element) {
-    // do stuff efficiently
+    // do not repeat yourself
 }
 ```
 
@@ -969,11 +969,17 @@ Depending on your use case, the performance difference may be negligible, though
 
 However, in cloud environments, memory may be expensive. It is a tradeoff.
 
+In real-world scenarios, with OpCache enabled,
+using Toru would decrease memory usage with minimal/negligible impact on execution time.
+
 > For example, chaining multiple collections into one instead of using `array_merge` will be more efficient.
 >
 > https://3v4l.org/Ymksm  
 > https://3v4l.org/OmUb3  
 > https://3v4l.org/HMasj  
+>
+> Also use comparison scripts in `/tests/performance` against your actual environment, if you are concerned about performance.
+>
 
 
 ## Alternatives
