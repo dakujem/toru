@@ -6,8 +6,10 @@ use Dakujem\Toru\Exceptions\UnexpectedValueException;
 use Dakujem\Toru\Itera;
 use Dakujem\Toru\Regenerator;
 use Tester\Assert;
+use Tester\Environment;
 
 require_once __DIR__ . '/../vendor/autoload.php';
+Environment::setup();
 
 (function () {
     $counter = 0;

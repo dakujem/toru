@@ -6,8 +6,10 @@ use Dakujem\Toru\Dash;
 use Dakujem\Toru\Exceptions\BadMethodCallException;
 use Dakujem\Toru\Itera;
 use Tester\Assert;
+use Tester\Environment;
 
 require_once __DIR__ . '/../vendor/autoload.php';
+Environment::setup();
 
 class Extension extends Dash
 {

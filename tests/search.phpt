@@ -7,10 +7,12 @@ use Dakujem\Toru\Exceptions\EmptyCollectionException;
 use Dakujem\Toru\Exceptions\NoMatchingElementFound;
 use Dakujem\Toru\Itera;
 use Tester\Assert;
+use Tester\Environment;
 use Tests\Support\Call;
 use Tests\Support\DashTest;
 
 require_once __DIR__ . '/../vendor/autoload.php';
+Environment::setup();
 
 (function () {
     $input = [

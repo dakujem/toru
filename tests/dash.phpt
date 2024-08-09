@@ -6,10 +6,12 @@ use Dakujem\Toru\Dash;
 use Dakujem\Toru\IteraFn;
 use Dakujem\Toru\Pipeline;
 use Tester\Assert;
+use Tester\Environment;
 use Tests\Support\Call;
 use Tests\Support\DashTest;
 
 require_once __DIR__ . '/../vendor/autoload.php';
+Environment::setup();
 
 $collection = [
     'a' => 0,

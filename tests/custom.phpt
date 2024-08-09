@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use Dakujem\Toru\Dash;
 use Tester\Assert;
+use Tester\Environment;
 
 require_once __DIR__ . '/../vendor/autoload.php';
+Environment::setup();
 
 (function () {
     $collection = Dash::collect(['zero', 'one', 'two', 'three',])
