@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Dakujem\Toru;
 
 use Dakujem\Toru\Exceptions\BadMethodCallException;
-use Iterator;
 use IteratorAggregate;
+use Traversable;
 
 /**
  * A wrapper for iterable collections that supports fluent decorations.
@@ -74,11 +74,6 @@ class Dash implements IteratorAggregate
     final public static function collect(iterable $collection): static
     {
         return new static($collection);
-    }
-
-    public function getIterator(): Iterator
-    {
-        return Itera::toIterator($this->collection);
     }
 
     /**
@@ -215,5 +210,10 @@ class Dash implements IteratorAggregate
             return sprintf('Did you mean `%s::%s`?', static::class, 'searchOrFail');
         }
         return sprintf('To include custom decorators in the chain, `%s::alter()` or `%s::aggregate()` may be used.', static::class, static::class);
+    }
+
+    public function getIterator(): Traversable
+    {
+        return Itera::ensureTraversable($this->collection);
     }
 }
