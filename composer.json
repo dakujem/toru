@@ -1,6 +1,6 @@
 {
   "name": "dakujem/toru",
-  "description": "Iterable collections with ease. Lodash-style fluent wrapper, iteration primitives, aggregates, utilities.",
+  "description": "Iterable collections with ease. Lodash-style fluent call chaining, iteration primitives, aggregates, utilities.",
   "keywords": [
     "iterator",
     "dash",

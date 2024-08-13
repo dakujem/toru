@@ -16,7 +16,7 @@ Toru provides a few common **iteration primitives** (e.g. `map`, `filter`, `tap`
 **aggregates** (e.g. `reduce`, `search`, `count`)
 and utility functions (e.g. `chain`) implemented using generators.
 
-Also implements **Lodash-style fluent wrapper** to simplify composition of various transformations on iterable collections.
+Also implements **Lodash-style fluent call chaining** to simplify composition of various transformations on iterable collections.
 
 The aim of Toru is to provide simple tools to work with the native `iterable` type*.  
 Leveraging generators, Toru enables memory-efficient operations on large datasets.
@@ -32,7 +32,7 @@ Use Toru when:
 - unable to use `foreach`
 - working with large datasets
 - running out of memory when transforming large collections (using arrays)
-- wanting to compose collection transformations neatly in fluent Lodash-like style
+- wanting to compose collection transformations neatly in fluent call chain, Lodash-style
 - in need of lazy evaluation (on-demand, per-element)
 
 >
@@ -1000,7 +1000,7 @@ by using a single class import instead of multiple function imports
 and by reordering the parameters so that the input collection is consistently the first one.  
 Still, composing multiple operations into one transformation is cumbersome, so the `IteraFn` factory was implemented to fix that.
 It worked well, but was still verbose for mundane tasks.  
-To allow concise Lodash-style chained calls, the `Dash` class was designed.
+To allow concise fluent/chained calls (like with Lodash), the `Dash` class was designed.
 With it, it's possible to compose transformations neatly.
 
 
@@ -1081,7 +1081,7 @@ $array = Pipeline::through(
     IteraFn::toArray(),
 );
 
-// Lodash-style fluent notation.
+// Lodash-style fluent call chaining.
 $array = Dash::collect($sequence)
     ->filter(fn($i) => 0 == $i % 2)
     ->reindex(fn($i) => $i)
