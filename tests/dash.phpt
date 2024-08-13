@@ -95,3 +95,7 @@ $expectSum = 13_000;
     );
 })();
 
+(function () use ($collection, $predicate, $mapper, $reducer, $initial, $expectArray, $expectSum) {
+    Assert::type(Iterator::class, Dash::collect([])->toIterator());
+    Assert::type(Traversable::class, Dash::collect([])->ensureTraversable());
+})();

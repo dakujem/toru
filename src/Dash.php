@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Dakujem\Toru;
 
 use Dakujem\Toru\Exceptions\BadMethodCallException;
+use Iterator;
 use IteratorAggregate;
 use Traversable;
 
@@ -50,6 +51,7 @@ use Traversable;
  * @method array toArray() Preserves the original keys. Watch out for overlapping keys (including numeric keys).
  * @method array toArrayMerge() Discards the numeric keys and preserves the original associative keys. Emulates `array_merge` behaviour for overlapping keys.
  * @method array toArrayValues() Discards the keys (similar to `array_values`).
+ * @method Iterator toIterator()
  * @method self|static|mixed reduce(callable $reducer, mixed $initial = null) Reduce the collection to a value. If the resulting value is of iterable type, it is wrapped into a collection before being returned to allow for fluent chaining. Other values are returned unaltered. The signature of the reducer is `fn(mixed $carry, mixed $value, mixed $key): mixed`.
  * @method mixed search(callable $predicate)
  * @method mixed searchOrFail(callable $predicate)
@@ -120,6 +122,7 @@ class Dash implements IteratorAggregate
             'toArray' === $name ||
             'toArrayValues' === $name ||
             'toArrayMerge' === $name ||
+            'toIterator' === $name ||
             'count' === $name ||
             'search' === $name ||
             'searchOrFail' === $name ||
@@ -171,11 +174,9 @@ class Dash implements IteratorAggregate
             );
         }
 
-        // Calling these methods makes little sense, but let's tolerate it.
-        if (
-            'toIterator' === $name ||
-            'ensureTraversable' === $name
-        ) {
+        // Calling method `ensureTraversable` makes little sense, but let's tolerate it.
+        // This instance is traversable, so the call is optimized by directly returning self.
+        if ('ensureTraversable' === $name) {
             return $this;
         }
 

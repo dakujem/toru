@@ -40,13 +40,12 @@ use Dakujem\Toru\Exceptions\BadMethodCallException;
  * @method static callable loop() Yield all elements of the wrapped collection indefinitely. Watch out for key collisions (see toArrayMerge, valuesOnly).
  * @method static callable replicate(int $times) Yield all elements of the wrapped collection exactly N times. Watch out for key collisions (see toArrayMerge, valuesOnly).
  *
- * @method static callable toIterator()
- * @method static callable ensureTraversable()
- *
  * Callables returned from the following methods immediately iterate the collection and evaluate all decorators, returning a `mixed` value type.
  * @method static callable toArray() Preserves the original keys. Watch out for overlapping keys (including numeric keys).
  * @method static callable toArrayMerge() Discards the numeric keys and preserves the original associative keys. Emulates `array_merge` behaviour for overlapping keys.
  * @method static callable toArrayValues() Discards the keys (similar to `array_values`).
+ * @method static callable toIterator()
+ * @method static callable ensureTraversable()
  * @method static callable reduce(callable $reducer, mixed $initial = null) The reducer has signature `fn(mixed $carry, mixed $value, mixed $key): mixed`.
  * @method static callable search(callable $predicate)
  * @method static callable searchOrFail(callable $predicate)
@@ -88,10 +87,7 @@ class IteraFn
             'flip' === $name ||
 
             'loop' === $name ||
-            'replicate' === $name ||
-
-            'toIterator' === $name ||
-            'ensureTraversable' === $name
+            'replicate' === $name
         ) {
             return fn(iterable $input): iterable => Itera::{$name}($input, ...$arguments);
         }
@@ -108,6 +104,8 @@ class IteraFn
             'toArray' === $name ||
             'toArrayValues' === $name ||
             'toArrayMerge' === $name ||
+            'toIterator' === $name ||
+            'ensureTraversable' === $name ||
             'count' === $name ||
             'search' === $name ||
             'searchOrFail' === $name ||
@@ -117,7 +115,6 @@ class IteraFn
             'firstKeyOrDefault' === $name ||
             'reduce' === $name
         ) {
-            // Returning a value, not a collection.
             return fn(iterable $input): mixed => Itera::{$name}($input, ...$arguments);
         }
 
