@@ -594,9 +594,10 @@ Dash::collect(['zero', 'one', 'two', 'three',])
 
 `Dash::aggregate` returns any value produced by the callable parameter, _without_ wrapping it into a new `Dash` instance.
 
-Missing a "key sum" function?
+Missing a "key sum" function? Need to compute the median value?
 ```php
 use Dakujem\Toru\Dash;
+use Dakujem\Toru\Itera;
 
 $keySum = Dash::collect($input)
     ->filter( /* ... */ )
@@ -607,6 +608,12 @@ $keySum = Dash::collect($input)
         }
         return $keySum;
     }); // no more fluent calls, integer is returned
+
+$median = Dash::collect($input)
+    ->filter( /* ... */ )
+    ->aggregate(function (iterable $collection): int {
+        return MyCalculus::computeMedian(Itera::toArray($collection));
+    }); // the median value is returned
 ```
 
 
@@ -621,6 +628,17 @@ use Dakujem\Toru\Itera;
 
 class MyItera extends Itera
 {
+    /**
+     * A shorthand for mapping arrays to use instead of `array_map`
+     * with keys provided for the mapper.
+     */
+    public static function mapToArray(iterable $input, callable $mapper): iterable
+    {
+        return static::toArray(
+            static::apply(input: $input, values: $mapper),
+        );
+    }
+
     public static function appendBar(iterable $input): iterable
     {
         return static::chain($input, ['bar' => 'bar']);
