@@ -3,42 +3,71 @@
 [![Test Suite](https://github.com/dakujem/toru/actions/workflows/php-test.yml/badge.svg)](https://github.com/dakujem/toru/actions/workflows/php-test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/dakujem/toru/badge.svg?branch=trunk)](https://coveralls.io/github/dakujem/toru?branch=trunk)
 
-Toru is a standalone tool for _iterable_ collections for simple day-to-day tasks and advanced optimizations.  
+Toru is a standalone tool for _iterable_ collections,
+ready for simple day-to-day tasks and advanced optimizations.  
 Most of its functionality is based on native _generators_ for efficiency with large data sets.
 
 >
 > 💿 `composer require dakujem/toru`
 >
+> 📒 [Changelog](changelog.md)
+>
 
-The package name comes from Japanese word "toru" (取る), which may mean "to take", "to pick up" or even "to collect".
+Toru provides a few common  
+- **iteration primitives** (e.g. `map`, `filter`, `tap`),
+- **aggregates** (e.g. `reduce`, `search`, `count`)
+- and utility functions (e.g. `chain`, `valuesOnly`, `slice`, `limit`)
 
-Toru provides a few common **iteration primitives** (e.g. `map`, `filter`, `tap`),
-**aggregates** (e.g. `reduce`, `search`, `count`)
-and utility functions (e.g. `chain`) implemented using generators.
+... implemented using **generators**.
 
-Also implements **Lodash-style fluent call chaining** to simplify composition of various transformations on iterable collections.
+TL;DR:
 
-The aim of Toru is to provide simple tools to work with the native `iterable` type*.  
-Leveraging generators, Toru enables memory-efficient operations on large datasets.
-
-All callable parameters (_mapper_, _predicate_, _reducer_ and _effect_ functions)
-always **receive keys** along with values.  
-This is a key advantage over native functions like `array_map`, `array_reduce`, `array_walk`, or `array_filter`.
-
-Use Toru when:
-
-- in need to perform operations on `iterable` without converting to arrays
-- in need to work with _keys_, as alternative to `array_map`, `array_filter` or `array_reduce`
-- unable to use `foreach`
-- working with large datasets
-- running out of memory when transforming large collections (using arrays)
-- wanting to compose collection transformations neatly in fluent call chain, Lodash-style
-- in need of lazy evaluation (on-demand, per-element)
+- transform elements of native `iterable` type* collections (iterators and arrays) _without_ converting to arrays
+- keys (indexes) provided for every mapper, filter, reducer or effect function
+- fluent call chaining enabled (Lodash-style)
+- lazy per-element evaluation of transformations
+- transform large data sets without increasing memory usage
+- better memory efficiency of generators compared to native array functions
+- slower than native array functions or direct transformations inside a `foreach` block
 
 >
 > \* The `iterable` is a built-in compile time type alias for `array|Traversable` encompassing all arrays and iterators,
 > so it's not exactly a native type, technically speaking.
 >
+
+**Fluent call chaining** enables neat transformation composition.
+```php
+_dash($collection)
+    ->filter(predicate: $filterFunction)
+    ->map(values: $mapperFunction)
+    ->chain($moreElements)
+    ->valuesOnly();
+```
+
+Toru enables **memory-efficient operations** on large data sets,
+because it leverages generators, which work on per-element basis and do not allocate extra memory.
+```php
+// no extra memory wasted on creating a filtered array
+$filtered = Itera::filter(input: $hugeDataSet, predicate: $filterFunction);
+foreach($filtered as $key => $value){ /* ... */ }
+```
+
+All callable parameters always **receive keys** along with values.  
+This is a key advantage over native functions like `array_map`, `array_reduce`, `array_walk`, or `array_filter`.
+```php
+$addresses = [
+    'john.doe@example.com' => 'John Doe',
+    'jane.doe@example.com' => 'Jane Doe',
+];
+$recipients = Itera::map(
+    $addresses, 
+    fn($recipientName, $recipientAddress) => new Recipient($recipientAddress, $recipientName),
+);
+Mailer::send($mail, $recipients);
+```
+
+> 🥋    
+> The package name comes from Japanese word "toru" (取る), which may mean "to take", "to pick up" or even "to collect".
 
 
 ## Examples
@@ -99,7 +128,7 @@ Most of the primitives described in API section below are implemented in **3 for
 
 Example of _filtering_ and _mapping_ a collection, then _appending_ some more already processed elements.
 
-Usage of the individual static methods example:
+Usage of the individual **static methods**:
 ```php
 use Dakujem\Toru\Itera;
 
@@ -109,7 +138,18 @@ $merged = Itera::chain($mapped, $moreElements);
 $processed = Itera::valuesOnly(input: $merged);
 ```
 
-Usage of the partially applied methods example:
+Usage of the `Dash` wrapper for fluent **call chaining**:
+```php
+use Dakujem\Toru\Dash;
+
+$processed = Dash::collect($collection)
+    ->filter(predicate: $filterFunction)
+    ->apply(values: $mapperFunction)
+    ->chain($moreElements)
+    ->valuesOnly();
+```
+
+Usage of the **partially applied methods**:
 ```php
 use Dakujem\Toru\Pipeline;
 use Dakujem\Toru\IteraFn;
@@ -123,20 +163,10 @@ $processed = Pipeline::through(
 );
 ```
 
-Usage of the `Dash` fluent wrapper example:
+The `$processed` collection can now be iterated over.
+All the above operations are applied at this point only, on per-element basis.
 ```php
-use Dakujem\Toru\Dash;
-
-$processed = Dash::collect($collection)
-    ->filter(predicate: $filterFunction)
-    ->apply(values: $mapperFunction)
-    ->chain($moreElements)
-    ->valuesOnly();
-```
-
-The `$processed` collection can now be iterated over. All the above operations are applied at this point.
-```php
-foreach($processed as $value){
+foreach ($processed as $value) {
     // The filtered and mapped values from $collection will appear here,
     // followed by the elements present in $moreElements.
 }
@@ -1006,19 +1036,21 @@ You might not need this library.
 - `mpetrovich/dash` provides a full range of transformation functions, uses _arrays_ internally
 - `lodash-php/lodash-php` imitates Lodash and provides a full range of utilities, uses _arrays_ internally
 - `nikic/iter` implements a range of iteration primitives using _generators_, authored by a PHP core team member
-- `illuminate/collections` should cover the needs of most Laravel developers, check the inner implementation for details
-- in many cases, a `foreach` will do the same job
+- `illuminate/collections` should cover the needs of most Laravel developers, but uses _arrays_ internally
+- in many cases, a `foreach` will do the job
 
-This library (`dakujem/toru`) does not provide a full range of ready-made transformation functions,
-rather provides the most common ones and means to bring in and compose own transformations.
+Toru library (`dakujem/toru`) does not provide a full range of ready-made transformation functions,
+rather provides the most common ones and means to bring in and compose own transformations.  
+It works well with and along with the aforementioned and other such libraries.
 
-It originally started as an alternative to `nikic/iter` for daily tasks, which to me has a somewhat cumbersome interface.  
+Toru originally started as an alternative to `nikic/iter` for daily tasks,
+which to me has a somewhat cumbersome interface.  
 The `Itera` static _class_ tries to fix that
 by using a single class import instead of multiple function imports
 and by reordering the parameters so that the input collection is consistently the first one.  
-Still, composing multiple operations into one transformation is cumbersome, so the `IteraFn` factory was implemented to fix that.
-It worked well, but was still verbose for mundane tasks.  
-To allow concise fluent/chained calls (like with Lodash), the `Dash` class was designed.
+Still, composing multiple operations into one transformation felt cumbersome, so the `IteraFn` factory was implemented to fix that.
+It worked well, but was still kind of verbose for mundane tasks.  
+To allow concise fluent/chained calls (like with Lodash), the `Dash` class was then designed.  
 With it, it's possible to compose transformations neatly.
 
 
@@ -1031,7 +1063,8 @@ That being said, good quality PRs will be accepted.
 Possible additions may include:
  
 - `combine` values and keys
-- `zip` multiple iterables
+- `zip` multiple iterables (python, haskell, etc.)
+- `alternate` multiple iterables (load-balance elements, mix)
 
 
 ---
