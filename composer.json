@@ -1,10 +1,12 @@
 {
   "name": "dakujem/toru",
-  "description": "Iterable collections with ease. Lodash-style fluent call chaining, iteration primitives, aggregates, utilities.",
+  "description": "取る - iterable collections with ease. Lodash-style fluent call chaining, generator-based iteration primitives, aggregates, utilities.",
   "keywords": [
+    "collection",
+    "iterable",
     "iterator",
     "dash",
-    "collection"
+    "lodash"
   ],
   "license": "Unlicense",
   "authors": [
