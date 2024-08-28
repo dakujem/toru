@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Dakujem\Toru;
 
 /**
- * Flow
+ * TODO Flow or Carry? Or... Pipeline? Chain? Trans? Trance?
  *
  * @author Andrej Rypak <xrypak@gmail.com>
  */
-final class Flow
+final class Carry
 {
     public function __construct(
         private readonly mixed $current,
