@@ -1036,7 +1036,7 @@ You might not need this library.
 - `mpetrovich/dash` provides a full range of transformation functions, uses _arrays_ internally
 - `lodash-php/lodash-php` imitates Lodash and provides a full range of utilities, uses _arrays_ internally
 - `nikic/iter` implements a range of iteration primitives using _generators_, authored by a PHP core team member
-- `illuminate/collections` should cover the needs of most Laravel developers, but uses _arrays_ internally
+- `illuminate/collections` should cover the needs of most Laravel developers, provides both array-based and generator-based implementations
 - in many cases, a `foreach` will do the job
 
 Toru library (`dakujem/toru`) does not provide a full range of ready-made transformation functions,
