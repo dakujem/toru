@@ -46,9 +46,6 @@ Environment::setup();
         true => 'third one (1)',
         false => 'false zero',
     ];
-    $nulls = [
-        null => 'null zero',
-    ];
     $empty = [
         '' => 'empty zero',
     ];
@@ -57,21 +54,18 @@ Environment::setup();
     Assert::same($first, Itera::toArray($first));
     Assert::same($second, Itera::toArray($second));
     Assert::same($third, Itera::toArray($third));
-    Assert::same($nulls, Itera::toArray($nulls));
     Assert::same($empty, Itera::toArray($empty));
 
     // sanity test
     Assert::same($first, Itera::toArrayMerge($first));
     Assert::same($second, Itera::toArrayMerge($second));
     Assert::same($third, Itera::toArrayMerge($third));
-    Assert::same($nulls, Itera::toArrayMerge($nulls));
     Assert::same($empty, Itera::toArrayMerge($empty));
 
     // sanity test
     Assert::same(array_values($first), Itera::toArrayValues($first));
     Assert::same(array_values($second), Itera::toArrayValues($second));
     Assert::same(array_values($third), Itera::toArrayValues($third));
-    Assert::same(array_values($nulls), Itera::toArrayValues($nulls));
     Assert::same(array_values($empty), Itera::toArrayValues($empty));
 
     DashTest::assert(
@@ -92,17 +86,6 @@ Environment::setup();
         ],
         function (mixed $out, ?string $desc) use ($first, $second, $third): void {
             Assert::same(array_merge($first, $third, $second), $out, $desc);
-        },
-        $first,
-        'Should be the same as array_merge',
-    );
-    DashTest::assert(
-        [
-            new Call('chain', $nulls),
-            new Call('toArrayMerge'),
-        ],
-        function (mixed $out, ?string $desc) use ($first, $nulls): void {
-            Assert::same(array_merge($first, $nulls), $out, $desc);
         },
         $first,
         'Should be the same as array_merge',
@@ -143,17 +126,6 @@ Environment::setup();
     );
     DashTest::assert(
         [
-            new Call('chain', $nulls),
-            new Call('toArray'),
-        ],
-        function (mixed $out, ?string $desc) use ($first, $nulls): void {
-            Assert::same(array_replace($first, $nulls), $out, $desc);
-        },
-        $first,
-        'Should be the same as array_replace',
-    );
-    DashTest::assert(
-        [
             new Call('chain', $empty),
             new Call('toArray'),
         ],
@@ -182,17 +154,6 @@ Environment::setup();
         ],
         function (mixed $out, ?string $desc) use ($first, $second, $third): void {
             Assert::same(array_merge(array_values($first), array_values($third), array_values($second)), $out, $desc);
-        },
-        $first,
-        'Should be the same as array_values, then merging',
-    );
-    DashTest::assert(
-        [
-            new Call('chain', $nulls),
-            new Call('toArrayValues'),
-        ],
-        function (mixed $out, ?string $desc) use ($first, $nulls): void {
-            Assert::same(array_merge(array_values($first), array_values($nulls)), $out, $desc);
         },
         $first,
         'Should be the same as array_values, then merging',

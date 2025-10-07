@@ -117,13 +117,13 @@ See the "Using a global alias" section below.
 
 ## Usage
 
-Most of the primitives described in API section below are implemented in **3 forms**:
+Most of the primitives described in the API section below are implemented in **3 forms**:
 1. as a static method `Itera::*(iterable $input, ...$args)`,
    for simple cases
 2. as a fluent method of the `Dash` wrapper, `Dash::*(...$args): Dash`,
    best suited for fluent composition
 3. as a factory method that creates partially applied callables `IteraFn::*(...$args): callable`,
-   to be composed into pipelines or used as filters (i.e. in Twig, Blade, Latte, ...)
+   to be composed into pipelines or used as filters (i.e., in Twig, Blade, Latte, ...)
 
 
 Example of _filtering_ and _mapping_ a collection, then _appending_ some more already processed elements.
@@ -151,11 +151,22 @@ $processed = Dash::collect($collection)
 
 Usage of the **partially applied methods**:
 ```php
+use Dakujem\Toru\IteraFn;
+
+$processed = $collection
+    |> IteraFn::filter(predicate: $filterFunction)
+    |> IteraFn::apply(values: $mapperFunction)
+    |> IteraFn::chain($moreElements)
+    |> IteraFn::valuesOnly();
+```
+
+With PHP versions prior to PHP 8.5, a trivial pipeline implementation needs to be used.
+```php
 use Dakujem\Toru\Pipeline;
 use Dakujem\Toru\IteraFn;
 
 $processed = Pipeline::through(
-    $collection,
+    $collection, // the passable collection
     IteraFn::filter(predicate: $filterFunction),
     IteraFn::apply(values: $mapperFunction),
     IteraFn::chain($moreElements),
@@ -163,14 +174,19 @@ $processed = Pipeline::through(
 );
 ```
 
-The `$processed` collection can now be iterated over.
-All the above operations are applied at this point only, on per-element basis.
+In all these cases, the `$processed` collection can be iterated over.
+All the above operations are applied at that point only, on a per-element basis.
 ```php
 foreach ($processed as $value) {
     // The filtered and mapped values from $collection will appear here,
     // followed by the elements present in $moreElements.
 }
 ```
+
+Behind the scenes, with each iteration, all the specified mapping, filtering, and transformation callables are applied
+to the current collection element and the result is yielded as `$value` into the iteration block.  
+This differs greatly to using `array_*` methods that iterate the whole collection processing it and producing the
+mapped/filtered/transformed values even before the iteration is started.
 
 
 ## API
@@ -754,11 +770,11 @@ Please understand generators before using Toru, it may help avoid a headache:
 📖 [Generator syntax](https://www.php.net/manual/en/language.generators.syntax.php)  
 
 
-### Generators and caveats with keys when casting to array
+### Generators and dangers of casting them to arrays
 
 There are two challenges native to generators when casting to arrays:
-1. overlapping keys (indexes)
-2. key types
+1. overlapping array keys (indexes)
+2. key types unsupported by arrays
 
 **Overlapping keys** cause values to be overwritten when using `iterator_to_array`.  
 And since generators may yield **keys of any type**, using them as array keys may result in `TypeError` exception.
@@ -772,7 +788,7 @@ Itera::toArray(
 );
 ```
 The result will be `[3, 4]`, which might be unexpected. The reason is that the iterables (arrays in this case) have overlapping keys,
-and the later values overwrite the previous ones, when casting to array.
+and the later values overwrite the previous ones when casting to array.
 ```php
 use Dakujem\Toru\Itera;
 
@@ -1079,7 +1095,6 @@ See when and why `Dash` may be more appropriate than `Itera` alone.
 ```php
 use Dakujem\Toru\Itera;
 use Dakujem\Toru\IteraFn;
-use Dakujem\Toru\Pipeline;
 use Dakujem\Toru\Dash;
 
 $sequence = Itera::produce(fn() => rand()); // infinite iterator
@@ -1104,13 +1119,13 @@ $interim = Itera::apply($interim, fn($i) => 'the value is ' . $i);
 $interim = Itera::limit($interim, 1000);
 $array = Itera::toArray($interim);
 
-// Without the interim variable(s), the reading order of the calls is reversed
+// Without the interim variable(s), the reading order of the calls is reversed, 
 // and the whole computation is not exactly legible.
 $array = Itera::toArray(
     Itera::limit(
         Itera::apply(
             Itera::reindex(
-                Itera::filter(
+                Itera::filter( #  <-- this filter is applied first
                     $sequence,
                     fn($i) => 0 == $i % 2,
                 ),
@@ -1123,13 +1138,13 @@ $array = Itera::toArray(
 );
 
 // Complex pipelines may be composed using partially applied callables.
-$array = Pipeline::through(
-    $sequence,
-    IteraFn::filter(fn($i) => 0 == $i % 2),
-    IteraFn::reindex(fn($i) => $i),
-    IteraFn::apply(fn($i) => 'the value is ' . $i),
-    IteraFn::limit(1000),
-    IteraFn::toArray(),
+// Note: Achieve the same using Dakujem\Toru\Pipeline with PHP <8.5
+$array = $sequence
+    |> IteraFn::filter(fn($i) => 0 == $i % 2)
+    |> IteraFn::reindex(fn($i) => $i)
+    |> IteraFn::apply(fn($i) => 'the value is ' . $i)
+    |> IteraFn::limit(1000)
+    |> IteraFn::toArray();
 );
 
 // Lodash-style fluent call chaining.
@@ -1166,10 +1181,10 @@ foreach ($iterator as $fileInfo) {
 }
 ```
 
-This will work in development, but will have a huge impact on your server if you try to list _millions_ of images,
+This will work in development but will have a huge impact on your server if you try to list _millions_ of images,
 something not uncommon for mid-sized content-oriented projects.
 
-The way to fix that is by utilizing a generator:
+The way to fix that is by using a generator:
 ```php
 $listImages = function(string $dir): Generator {
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
@@ -1191,7 +1206,7 @@ $listImages = function(string $dir): Generator {
 $images = $listImages($dir);
 ```
 
-And what if you could create equivalent generator like this...
+And what if you could create an equivalent generator like this...
 ```php
 $images = _dash(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir))) // recursively iterate over a dir
     ->filter(fn(SplFileInfo $fileInfo) => !$fileInfo->isDir())                       // reject directories
@@ -1199,5 +1214,13 @@ $images = _dash(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($di
     ->reindex(fn(SplFileInfo $fileInfo) => $fileInfo->getPathname());                // key by the full file path
 ```
 
-It now depends on personal preference. Both will do the trick and be equally efficient.
+Finally, with PHP 8.5 pipelines, like this:
+```php
+$images = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir))        // recursively iterate over a dir
+    |> IteraFn::filter(fn(SplFileInfo $file) => !$file->isDir())                     // reject directories
+    |> IteraFn::filter(fn(SplFileInfo $file) => @getimagesize($file->getPathname())) // accept only images (hacky)
+    |> IteraFn::reindex(fn(SplFileInfo $file) => $file->getPathname());              // key by the full file path
+```
 
+It now depends on personal preference. All of these generator/iterator approaches will do the trick
+and be equally efficient.
