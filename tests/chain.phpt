@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Dakujem\Toru\Dash;
 use Dakujem\Toru\Itera;
 use Dakujem\Toru\IteraFn;
+use Dakujem\Toru\Tofu;
 use Dakujem\Toru\Regenerator;
 use Tester\Assert;
 use Tester\Environment;
@@ -53,7 +54,7 @@ Environment::setup();
     // `append` is not defined on `Itera`...
     Assert::throws(fn() => Itera::append('foo'), Error::class);
 
-    // ... but is supported for chained call by `Dash` and for partial application by `IteraFn`.
+    // ... but is supported for chained call by `Dash` and for partial application by `Toru`.
     DashTest::assert(
         [
             new Call(
@@ -72,6 +73,6 @@ Environment::setup();
         },
         [1, 2],
         null,
-        [Dash::class, IteraFn::class],
+        [Dash::class, Tofu::class, IteraFn::class],
     );
 })();

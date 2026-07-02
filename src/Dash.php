@@ -20,48 +20,6 @@ use Traversable;
  * The methods have the same functionality as their counterparts in the `Itera` class.
  * The signatures are also the same, except the first parameter (`$input`), which is omitted and the wrapped collection is used instead.
  * @see Itera
- *
- * The following methods decorate the wrapped iterable creating a new iterable object (a Generator in most cases),
- * returning a new wrapper instance containing the decorated iterable.
- * @method self|static chain(iterable ...$more) The chain method effectively appends one or more collections to the currently wrapped one.
- * @method self|static append(iterable ...$more) Alias for `chain`.
- *
- * @method self|static filter(callable $predicate)
- * @method self|static limit(int $limit)
- * @method self|static omit(int $omitted)
- * @method self|static slice(int $offset, int $limit)
- *
- * @method self|static adjust(?callable $values = null, ?callable $keys = null)
- * @method self|static map(callable $values) Alias for `apply`.
- * @method self|static apply(callable $values)
- * @method self|static reindex(callable $keys)
- * @method self|static unfold(callable $mapper)
- * @method self|static valuesOnly() Discards the keys (similar to `array_values`).
- * @method self|static keysOnly() Returns only the keys (similar to `array_keys`).
- * @method self|static flip()
- *
- * @method self|static tap(callable $effect)
- * @method self|static each(callable $effect) Alias for `tap`.
- *
- * @method self|static repeat() Repeat the whole wrapped collection indefinitely.
- * @method self|static loop() Yield all elements of the wrapped collection indefinitely. Watch out for key collisions (see toArrayMerge, valuesOnly).
- * @method self|static replicate(int $times) Yield all elements of the wrapped collection exactly N times. Watch out for key collisions (see toArrayMerge, valuesOnly).
- *
- * The following methods immediately iterate the collection and evaluate all decorators, returning a value.
- * @method array toArray() Preserves the original keys. Watch out for overlapping keys (including numeric keys).
- * @method array toArrayMerge() Discards the numeric keys and preserves the original associative keys. Emulates `array_merge` behaviour for overlapping keys.
- * @method array toArrayValues() Discards the keys (similar to `array_values`).
- * @method Iterator toIterator()
- * @method self|static|mixed reduce(callable $reducer, mixed $initial = null) Reduce the collection to a value. If the resulting value is of iterable type, it is wrapped into a collection before being returned to allow for fluent chaining. Other values are returned unaltered. The signature of the reducer is `fn(mixed $carry, mixed $value, mixed $key): mixed`.
- * @method mixed search(callable $predicate)
- * @method mixed searchOrFail(callable $predicate)
- * @method mixed firstValue()
- * @method mixed firstKey()
- * @method mixed firstValueOrDefault(mixed $default = null)
- * @method mixed firstKeyOrDefault(mixed $default = null)
- * @method int count()
- *
- * @author Andrej Rypak <xrypak@gmail.com>
  */
 class Dash implements IteratorAggregate
 {
@@ -79,7 +37,7 @@ class Dash implements IteratorAggregate
     }
 
     /**
-     * Alter the collection as a whole using a decorator with signature `fn(iterable $collection):iterable`.
+     * Alter the collection as a whole using a decorator with the signature `fn(iterable $collection):iterable`.
      * The result is wrapped into a new wrapper instance and returned.
      * This is useful as an extension point, to implement decorations not directly provided
      * by this wrapper without extending the class.
@@ -94,7 +52,7 @@ class Dash implements IteratorAggregate
     /**
      * Pass the collection as a whole through the aggregate function and return the result.
      *
-     * The aggregate function should have signature `fn(iterable $collection):mixed`.
+     * The aggregate function should have the signature `fn(iterable $collection):mixed`.
      * The result is returned as-is, without wrapping it into a new wrapper instance.
      *
      * This is a counterpart to the `alter` method that always wraps the result.
@@ -112,74 +70,290 @@ class Dash implements IteratorAggregate
         return $this->collection;
     }
 
+    //
+    // The following methods decorate the wrapped iterable creating a new iterable object
+    // (a Generator in most cases), returning a new wrapper instance for fluency.
+    //
+
     /**
-     * This class may be extended and any of the methods may be implemented directly to change the default behaviour.
+     * @see Itera::chain()
+     */
+    public function chain(iterable ...$more): static
+    {
+        return new static(Itera::chain($this->collection, ...$more));
+    }
+
+    /**
+     * Alias for `chain`.
+     * @see Itera::chain()
+     */
+    public function append(iterable ...$more): static
+    {
+        return self::chain(...$more);
+    }
+
+    /**
+     * @see Itera::adjust()
+     */
+    public function adjust(?callable $values = null, ?callable $keys = null): static
+    {
+        return new static(Itera::adjust($this->collection, $values, $keys));
+    }
+
+    /**
+     * @see Itera::apply()
+     */
+    public function apply(callable $values): static
+    {
+        return new static(Itera::apply($this->collection, $values));
+    }
+
+    /**
+     * Alias for `apply`.
+     * @see Itera::map()
+     */
+    public function map(callable $values): static
+    {
+        return new static(Itera::map($this->collection, $values));
+    }
+
+    /**
+     * @see Itera::reindex()
+     */
+    public function reindex(callable $keys): static
+    {
+        return new static(Itera::reindex($this->collection, $keys));
+    }
+
+    /**
+     * @see Itera::filter()
+     */
+    public function filter(callable $predicate): static
+    {
+        return new static(Itera::filter($this->collection, $predicate));
+    }
+
+    /**
+     * @see Itera::limit()
+     */
+    public function limit(int $limit): static
+    {
+        return new static(Itera::limit($this->collection, $limit));
+    }
+
+    /**
+     * @see Itera::omit()
+     */
+    public function omit(int $count): static
+    {
+        return new static(Itera::omit($this->collection, $count));
+    }
+
+    /**
+     * @see Itera::slice()
+     */
+    public function slice(int $offset, int $limit): static
+    {
+        return new static(Itera::slice($this->collection, $offset, $limit));
+    }
+
+    /**
+     * @see Itera::tap()
+     */
+    public function tap(callable $effect): static
+    {
+        return new static(Itera::tap($this->collection, $effect));
+    }
+
+    /**
+     * Alias for `tap`.
+     * @see Itera::each()
+     */
+    public function each(callable $effect): static
+    {
+        return new static(Itera::each($this->collection, $effect));
+    }
+
+    /**
+     * @see Itera::unfold()
+     */
+    public function unfold(callable $mapper): static
+    {
+        return new static(Itera::unfold($this->collection, $mapper));
+    }
+
+    /**
+     * @see Itera::valuesOnly()
+     */
+    public function valuesOnly(): static
+    {
+        return new static(Itera::valuesOnly($this->collection));
+    }
+
+    /**
+     * @see Itera::keysOnly()
+     */
+    public function keysOnly(): static
+    {
+        return new static(Itera::keysOnly($this->collection));
+    }
+
+    /**
+     * @see Itera::flip()
+     */
+    public function flip(): static
+    {
+        return new static(Itera::flip($this->collection));
+    }
+
+    /**
+     * @see Itera::repeat()
+     */
+    public function repeat(): static
+    {
+        return new static(Itera::repeat($this->collection));
+    }
+
+    /**
+     * @see Itera::loop()
+     */
+    public function loop(): static
+    {
+        return new static(Itera::loop($this->collection));
+    }
+
+    /**
+     * @see Itera::replicate()
+     */
+    public function replicate(int $times): static
+    {
+        return new static(Itera::replicate($this->collection, $times));
+    }
+
+    /**
+     * Special case for the `reduce` method to allow chained matrix reductions.
+     * If the reducer returns an iterable type (array or Traversable), it will be wrapped as a Dash collection for fluency;
+     * if it returns any other value type, it will be returned as-is.
+     * @see Itera::reduce()
+     */
+    public function reduce(callable $reducer, mixed $initial = null): mixed
+    {
+        $reduction = Itera::reduce($this->collection, $reducer, $initial);
+        return is_iterable($reduction) ? new static($reduction) : $reduction;
+    }
+
+    //
+    // The following methods immediately iterate the collection and evaluate all decorators,
+    // returning a value directly (not a wrapper).
+    //
+
+    /**
+     * @see Itera::toArray()
+     */
+    public function toArray(): array
+    {
+        return Itera::toArray($this->collection);
+    }
+
+    /**
+     * @see Itera::toArrayValues()
+     */
+    public function toArrayValues(): array
+    {
+        return Itera::toArrayValues($this->collection);
+    }
+
+    /**
+     * @see Itera::toArrayMerge()
+     */
+    public function toArrayMerge(): array
+    {
+        return Itera::toArrayMerge($this->collection);
+    }
+
+    /**
+     * @see Itera::toIterator()
+     */
+    public function toIterator(): Iterator
+    {
+        return Itera::toIterator($this->collection);
+    }
+
+    /**
+     * @see Itera::count()
+     */
+    public function count(): int
+    {
+        return Itera::count($this->collection);
+    }
+
+    /**
+     * @see Itera::search()
+     */
+    public function search(callable $predicate, mixed $default = null): mixed
+    {
+        return Itera::search($this->collection, $predicate, $default);
+    }
+
+    /**
+     * @see Itera::searchOrFail()
+     */
+    public function searchOrFail(callable $predicate): mixed
+    {
+        return Itera::searchOrFail($this->collection, $predicate);
+    }
+
+    /**
+     * @see Itera::firstValue()
+     */
+    public function firstValue(): mixed
+    {
+        return Itera::firstValue($this->collection);
+    }
+
+    /**
+     * @see Itera::firstKey()
+     */
+    public function firstKey(): mixed
+    {
+        return Itera::firstKey($this->collection);
+    }
+
+    /**
+     * @see Itera::firstValueOrDefault()
+     */
+    public function firstValueOrDefault(mixed $default = null): mixed
+    {
+        return Itera::firstValueOrDefault($this->collection, $default);
+    }
+
+    /**
+     * @see Itera::firstKeyOrDefault()
+     */
+    public function firstKeyOrDefault(mixed $default = null): mixed
+    {
+        return Itera::firstKeyOrDefault($this->collection, $default);
+    }
+
+    /**
+     * Calling `ensureTraversable` makes little sense, but let's tolerate it.
+     * This instance is traversable, so the call is optimized by directly returning self.
+     * @see Itera::ensureTraversable()
+     */
+    public function ensureTraversable(): static
+    {
+        return $this;
+    }
+
+    /**
+     * This class may be extended to add new methods.
+     * Any of the methods forwarding to the `Itera` class
+     * may be overridden in the extending class to change the default behaviour.
+     *
+     * Calls to unsupported methods are routed here to produce a helpful hint.
      */
     public function __call(string $name, array $arguments): mixed
     {
-        // These methods return directly.
-        if (
-            'toArray' === $name ||
-            'toArrayValues' === $name ||
-            'toArrayMerge' === $name ||
-            'toIterator' === $name ||
-            'count' === $name ||
-            'search' === $name ||
-            'searchOrFail' === $name ||
-            'firstValue' === $name ||
-            'firstKey' === $name ||
-            'firstValueOrDefault' === $name ||
-            'firstKeyOrDefault' === $name
-        ) {
-            // Returning a value, not a collection.
-            return Itera::{$name}($this->collection, ...$arguments);
-        }
-
-        // Special case for `reduce` method to allow chained matrix reductions.
-        // If the reducer returns an iterable type (array or Traversable) it will be wrapped as a Collection for fluency;
-        // if it returns any other value type it will be returned as-is.
-        if ('reduce' === $name) {
-            $reduction = Itera::{$name}($this->collection, ...$arguments);
-            return is_iterable($reduction) ? new static($reduction) : $reduction;
-        }
-
-        // Alias for the `append` function.
-        if ('append' === $name) {
-            $name = 'chain';
-        }
-
-        // Methods that return iterable types get wrapped for fluency.
-        if (
-            'adjust' === $name ||
-            'apply' === $name || // == map
-            'map' === $name ||
-            'reindex' === $name ||
-            'filter' === $name ||
-            'limit' === $name ||
-            'omit' === $name ||
-            'slice' === $name ||
-            'chain' === $name || // == append
-            'tap' === $name || // == each
-            'each' === $name ||
-            'unfold' === $name ||
-            'valuesOnly' === $name ||
-            'keysOnly' === $name ||
-            'flip' === $name ||
-            'repeat' === $name ||
-            'loop' === $name ||
-            'replicate' === $name
-        ) {
-            return new static(
-                Itera::{$name}($this->collection, ...$arguments)
-            );
-        }
-
-        // Calling method `ensureTraversable` makes little sense, but let's tolerate it.
-        // This instance is traversable, so the call is optimized by directly returning self.
-        if ('ensureTraversable' === $name) {
-            return $this;
-        }
-
         $hint = static::_hint($name, $arguments);
         throw new BadMethodCallException(
             sprintf('Invalid call to `%s::%s`.', static::class, $name) .

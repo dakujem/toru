@@ -8,13 +8,12 @@ use Dakujem\Toru\Dash;
 use Dakujem\Toru\Itera;
 use Dakujem\Toru\IteraFn;
 use Dakujem\Toru\Pipeline;
+use Dakujem\Toru\Tofu;
 use LogicException;
 
 /**
  * Allows for testing all the iteration implementations of `dakujem/toru`
- * (`Itera`, `IteraFn`, `Dash`) using unified commands.
- *
- * @author Andrej Rypak <xrypak@gmail.com>
+ * (`Itera`, `Tofu`, `Dash`) using unified commands.
  */
 class DashTest
 {
@@ -91,6 +90,35 @@ class DashTest
     /**
      * @param Call[] $callChain
      */
+    public static function assertTofu(
+        iterable $callChain,
+        callable $assertion,
+        mixed $input, // mixed should not be acceptable, but we need to test the case
+        ?string $description = null,
+    ): void {
+        $result = self::invokeTofu($callChain, $input);
+        $assertion($result, $description);
+    }
+
+    /**
+     * @param Call[] $callChain
+     */
+    public static function invokeTofu(
+        iterable $callChain,
+        mixed $input,
+    ): mixed {
+        return Pipeline::throughStages(
+            passable: $input,
+            stages: Itera::apply(
+                input: $callChain,
+                values: fn(Call $call) => Tofu::{$call->method()}(...$call->args()),
+            ),
+        );
+    }
+
+    /**
+     * @param Call[] $callChain
+     */
     public static function assertIteraFn(
         iterable $callChain,
         callable $assertion,
@@ -117,6 +145,7 @@ class DashTest
         );
     }
 
+
     public static function assert(
         iterable $callChain,
         callable $assertion,
@@ -124,7 +153,7 @@ class DashTest
         ?string $description = null,
         ?array $subjects = null,
     ): void {
-        $subjects ??= [Itera::class, Dash::class, IteraFn::class];
+        $subjects ??= [Itera::class, Dash::class, Tofu::class, IteraFn::class];
         if (empty($subjects)) {
             throw new LogicException('No test subjects.');
         }
@@ -132,6 +161,7 @@ class DashTest
             $method = match ($class) {
                 Itera::class => 'assertItera',
                 Dash::class => 'assertDash',
+                Tofu::class => 'assertTofu',
                 IteraFn::class => 'assertIteraFn',
             };
             static::{$method}($callChain, $assertion, $input, '[' . $class . '] ' . $description);
@@ -144,7 +174,7 @@ class DashTest
         mixed $input,
         ?array $subjects = null,
     ): void {
-        $subjects ??= [Itera::class, Dash::class, IteraFn::class];
+        $subjects ??= [Itera::class, Dash::class, Tofu::class, IteraFn::class];
         if (empty($subjects)) {
             throw new LogicException('No test subjects.');
         }
@@ -152,6 +182,7 @@ class DashTest
             $method = match ($class) {
                 Itera::class => 'invokeItera',
                 Dash::class => 'invokeDash',
+                Tofu::class => 'invokeTofu',
                 IteraFn::class => 'invokeIteraFn',
             };
             $testCode = fn() => static::{$method}($callChain, $input);

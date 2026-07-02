@@ -10,7 +10,8 @@ namespace Dakujem\Toru;
  * The input is processed by the first stage, the result is passed on to the second and so on.
  * Each stage receives the output of the previous stage.
  *
- * @author Andrej Rypak <xrypak@gmail.com>
+ * Note:
+ *   Since PHP 8.5 it is better to use the native pipe operator instead.
  */
 final class Pipeline
 {

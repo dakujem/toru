@@ -7,9 +7,6 @@ namespace Dakujem\Toru\Exceptions;
 use RuntimeException;
 use Throwable;
 
-/**
- * @author Andrej Rypák (dakujem) <xrypak@gmail.com>
- */
 final class EmptyCollectionException extends RuntimeException implements IndicatesExceptionalCase
 {
     public iterable $input;

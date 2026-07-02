@@ -122,7 +122,7 @@ Most of the primitives described in the API section below are implemented in **3
    for simple cases
 2. as a fluent method of the `Dash` wrapper, `Dash::*(...$args): Dash`,
    best suited for fluent composition
-3. as a factory method that creates partially applied callables `IteraFn::*(...$args): callable`,
+3. as a factory method that creates partially applied callables `Tofu::*(...$args): callable`,
    to be composed into pipelines or used as filters (i.e., in Twig, Blade, Latte, ...)
 
 
@@ -150,27 +150,30 @@ $processed = Dash::collect($collection)
 ```
 
 Usage of the **partially applied methods**:
+
 ```php
-use Dakujem\Toru\IteraFn;
+use Dakujem\Toru\Tofu;
 
 $processed = $collection
-    |> IteraFn::filter(predicate: $filterFunction)
-    |> IteraFn::apply(values: $mapperFunction)
-    |> IteraFn::chain($moreElements)
-    |> IteraFn::valuesOnly();
+    |> Tofu::filter(predicate: $filterFunction)
+    |> Tofu::apply(values: $mapperFunction)
+    |> Tofu::chain($moreElements)
+    |> Tofu::valuesOnly();    
+
 ```
 
 With PHP versions prior to PHP 8.5, a trivial pipeline implementation needs to be used.
+
 ```php
 use Dakujem\Toru\Pipeline;
-use Dakujem\Toru\IteraFn;
+use Dakujem\Toru\Tofu;
 
 $processed = Pipeline::through(
     $collection, // the passable collection
-    IteraFn::filter(predicate: $filterFunction),
-    IteraFn::apply(values: $mapperFunction),
-    IteraFn::chain($moreElements),
-    IteraFn::valuesOnly(),
+    Tofu::filter(predicate: $filterFunction),
+    Tofu::apply(values: $mapperFunction),
+    Tofu::chain($moreElements),
+    Tofu::valuesOnly(),
 );
 ```
 
@@ -196,13 +199,13 @@ mapped/filtered/transformed values even before the iteration is started.
 ```php
 use Dakujem\Toru\Dash;
 use Dakujem\Toru\Itera;
-use Dakujem\Toru\IteraFn;
+use Dakujem\Toru\Tofu;
 
 Itera::chain(iterable ...$input): iterable
 
-// `append` is only present in `Dash` and `IteraFn` classes as an alias to `chain`
+// `append` is only present in `Dash` and `Tofu` classes as an alias to `chain`
 Dash::append(iterable ...$more): Dash
-IteraFn::append(iterable ...$more): callable
+Tofu::append(iterable ...$more): callable
 ```
 
 The `chain` method creates an iterable composed of all the arguments.  
@@ -213,7 +216,7 @@ because it does not double the memory usage.
 
 The `append` method appends iterables to the wrapped/input collection. It is an alias of the `chain` method.
 
-The `append` method is present in `IteraFn` and `Dash` classes only.
+The `append` method is present in `Tofu` and `Dash` classes only.
 Appending makes no sense in the static context of the `Itera` class as there is nothing to append to.  
 In static context, use `Itera::chain` instead.
 
@@ -666,7 +669,7 @@ $median = Dash::collect($input)
 ## Extending Toru
 
 Extending the `Dash` class may be considered to implement custom transformations or aggregations to use within the fluent call chain.  
-The `Itera` and `IteraFn` classes may be extended for consistence with extension to `Dash`.
+The `Itera` and `Tofu` classes may be extended for consistence with extension to `Dash`.
 
 ```php
 use Dakujem\Toru\Dash;
@@ -985,22 +988,22 @@ foreach($filtered as $k => $v) { /* ...*/ }
 ### Pipeline
 
 A simple processing pipeline implementation.
-Useful with `IteraFn` class to compose processing algorithms.
+Useful with `Tofu` class to compose processing algorithms.
 
 ```php
-use Dakujem\Toru\IteraFn;
+use Dakujem\Toru\Tofu;
 use Dakujem\Toru\Pipeline;
 
 $alteredCollection = Pipeline::through(
     $collection,
-    IteraFn::filter(predicate: $filterFunction),
-    IteraFn::map(values: $mapper),
+    Tofu::filter(predicate: $filterFunction),
+    Tofu::map(values: $mapper),
 );
 // Pipelines are not limited to producing iterable collections, they may produce any value types:
 $average = Pipeline::through(
     $collection,
-    IteraFn::filter(predicate: $filterFunction),
-    IteraFn::reduce(reducer: fn($carry, $current) => $carry + $current, initial: 0),
+    Tofu::filter(predicate: $filterFunction),
+    Tofu::reduce(reducer: fn($carry, $current) => $carry + $current, initial: 0),
     fn(int $sum) => $sum / $sizeOfCollection,
 );
 ```
@@ -1065,14 +1068,15 @@ The `Itera` static _class_ tries to fix that
 by using a single class import instead of multiple function imports
 and by reordering the parameters so that the input collection is consistently the first one.  
 Still, composing multiple operations into one transformation felt cumbersome, so the `IteraFn` factory was implemented to fix that.
-It worked well, but was still kind of verbose for mundane tasks.  
+It worked well, but was still kind of verbose for mundane tasks (this was before PHP 8.5).  
 To allow concise fluent/chained calls (like with Lodash), the `Dash` class was then designed.  
-With it, it's possible to compose transformations neatly.
+With it, it's possible to compose transformations neatly.  
+Now since PHP 8.5 onwards, the `Tofu` class also allows for neat transformations.
 
 
 ## Contribution and future development
 
-The intention is not to provide a plethora specific functions, rather offer tools for most used cases.
+The intention is not to provide a plethora of specific functions, rather offer tools for most used cases.
 
 That being said, good quality PRs will be accepted.
 
@@ -1094,7 +1098,7 @@ See when and why `Dash` may be more appropriate than `Itera` alone.
 
 ```php
 use Dakujem\Toru\Itera;
-use Dakujem\Toru\IteraFn;
+use Dakujem\Toru\Tofu;
 use Dakujem\Toru\Dash;
 
 $sequence = Itera::produce(fn() => rand()); // infinite iterator
@@ -1140,11 +1144,11 @@ $array = Itera::toArray(
 // Complex pipelines may be composed using partially applied callables.
 // Note: Achieve the same using Dakujem\Toru\Pipeline with PHP <8.5
 $array = $sequence
-    |> IteraFn::filter(fn($i) => 0 == $i % 2)
-    |> IteraFn::reindex(fn($i) => $i)
-    |> IteraFn::apply(fn($i) => 'the value is ' . $i)
-    |> IteraFn::limit(1000)
-    |> IteraFn::toArray();
+    |> Tofu::filter(fn($i) => 0 == $i % 2)
+    |> Tofu::reindex(fn($i) => $i)
+    |> Tofu::apply(fn($i) => 'the value is ' . $i)
+    |> Tofu::limit(1000)
+    |> Tofu::toArray();
 );
 
 // Lodash-style fluent call chaining.
@@ -1217,9 +1221,9 @@ $images = _dash(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($di
 Finally, with PHP 8.5 pipelines, like this:
 ```php
 $images = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir))        // recursively iterate over a dir
-    |> IteraFn::filter(fn(SplFileInfo $file) => !$file->isDir())                     // reject directories
-    |> IteraFn::filter(fn(SplFileInfo $file) => @getimagesize($file->getPathname())) // accept only images (hacky)
-    |> IteraFn::reindex(fn(SplFileInfo $file) => $file->getPathname());              // key by the full file path
+    |> Tofu::filter(fn(SplFileInfo $file) => !$file->isDir())                     // reject directories
+    |> Tofu::filter(fn(SplFileInfo $file) => @getimagesize($file->getPathname())) // accept only images (hacky)
+    |> Tofu::reindex(fn(SplFileInfo $file) => $file->getPathname());              // key by the full file path
 ```
 
 It now depends on personal preference. All of these generator/iterator approaches will do the trick

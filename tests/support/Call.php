@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 /**
- * Represents a call to a method supported by Itera/Dash/IteraFn classes.
- *
- * @author Andrej Rypak <xrypak@gmail.com>
+ * Represents a call to a method supported by Itera/Dash/Tofu classes.
  */
 final class Call
 {

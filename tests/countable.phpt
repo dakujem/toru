@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use Dakujem\Toru\Dash;
 use Dakujem\Toru\Itera;
+use Dakujem\Toru\Tofu;
 use Tester\Assert;
 use Tester\Environment;
 
@@ -48,4 +50,10 @@ class Foo extends Bar implements Countable
     ];
     $iterable = Itera::make(...$input);
     Assert::same(count($input), Itera::count($iterable));
+})();
+
+(function () {
+    // The `count` method is reachable through the wrappers as well.
+    Assert::same(5, Dash::collect([1, 4, 5, 3, 2])->count());
+    Assert::same(5, (Tofu::count())([1, 4, 5, 3, 2]));
 })();

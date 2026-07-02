@@ -6,6 +6,7 @@ use Dakujem\Toru\Dash;
 use Dakujem\Toru\Exceptions\EmptyCollectionException;
 use Dakujem\Toru\Exceptions\NoMatchingElementFound;
 use Dakujem\Toru\Itera;
+use Dakujem\Toru\Tofu;
 use Tester\Assert;
 use Tester\Environment;
 use Tests\Support\Call;
@@ -100,6 +101,54 @@ Environment::setup();
         $input,
         'nothing to be found when the predicate rejects only, return null',
     );
+
+    // The optional `$default` is returned when no element matches.
+    DashTest::assert(
+        [
+            new Call(
+                method: 'search',
+                predicate: fn() => false, // always rejects, nothing matches
+                default: 'Frodo',
+            ),
+        ],
+        function (mixed $out, ?string $desc): void {
+            Assert::same('Frodo', $out, $desc);
+        },
+        $input,
+        'no match, return the provided default',
+    );
+    DashTest::assert(
+        [
+            new Call(
+                method: 'search',
+                predicate: fn() => true,
+                default: 'Frodo',
+            ),
+        ],
+        function (mixed $out, ?string $desc): void {
+            Assert::same('Adam', $out, $desc);
+        },
+        $input,
+        'match found, the default is ignored',
+    );
+    DashTest::assert(
+        [
+            new Call(
+                method: 'search',
+                predicate: fn() => true,
+                default: 'Frodo',
+            ),
+        ],
+        function (mixed $out, ?string $desc): void {
+            Assert::same('Frodo', $out, $desc);
+        },
+        [], // empty collection, nothing to be found
+        'empty collection, return the provided default',
+    );
+
+    // The default may also be passed positionally (as forwarded to `Itera::search`).
+    Assert::same('Frodo', Dash::collect($input)->search(fn() => false, 'Frodo'));
+    Assert::same('Frodo', (Tofu::search(fn() => false, 'Frodo'))($input));
 })();
 
 

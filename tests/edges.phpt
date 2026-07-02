@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Dakujem\Toru\Dash;
 use Dakujem\Toru\Exceptions\BadMethodCallException;
-use Dakujem\Toru\IteraFn;
+use Dakujem\Toru\Tofu;
 use Tester\Assert;
 use Tester\Environment;
 
@@ -20,21 +20,21 @@ Environment::setup();
 
 (function () {
     $mms = [
-        'foo' => 'Invalid call to `Dakujem\Toru\IteraFn::foo`.',
+        'foo' => 'Invalid call to `Dakujem\Toru\Tofu::foo`.',
 
-        'values' => 'Invalid call to `Dakujem\Toru\IteraFn::values`. Did you mean `Dakujem\Toru\IteraFn::valuesOnly`?',
-        'keys' => 'Invalid call to `Dakujem\Toru\IteraFn::keys`. Did you mean `Dakujem\Toru\IteraFn::keysOnly`?',
-        'find' => 'Invalid call to `Dakujem\Toru\IteraFn::find`. Did you mean `Dakujem\Toru\IteraFn::search`?',
-        'findOrFail' => 'Invalid call to `Dakujem\Toru\IteraFn::findOrFail`. Did you mean `Dakujem\Toru\IteraFn::searchOrFail`?',
-        'findOrDefault' => 'Invalid call to `Dakujem\Toru\IteraFn::findOrDefault`. Did you mean `Dakujem\Toru\IteraFn::search`?',
+        'values' => 'Invalid call to `Dakujem\Toru\Tofu::values`. Did you mean `Dakujem\Toru\Tofu::valuesOnly`?',
+        'keys' => 'Invalid call to `Dakujem\Toru\Tofu::keys`. Did you mean `Dakujem\Toru\Tofu::keysOnly`?',
+        'find' => 'Invalid call to `Dakujem\Toru\Tofu::find`. Did you mean `Dakujem\Toru\Tofu::search`?',
+        'findOrFail' => 'Invalid call to `Dakujem\Toru\Tofu::findOrFail`. Did you mean `Dakujem\Toru\Tofu::searchOrFail`?',
+        'findOrDefault' => 'Invalid call to `Dakujem\Toru\Tofu::findOrDefault`. Did you mean `Dakujem\Toru\Tofu::search`?',
 
-        'make' => 'Invalid call to `Dakujem\Toru\IteraFn::make`. The method is not supported in partially applied form.',
-        'produce' => 'Invalid call to `Dakujem\Toru\IteraFn::produce`. The method is not supported in partially applied form.',
+        'make' => 'Invalid call to `Dakujem\Toru\Tofu::make`. The method is not supported in partially applied form.',
+        'produce' => 'Invalid call to `Dakujem\Toru\Tofu::produce`. The method is not supported in partially applied form.',
     ];
     foreach ($mms as $method => $message) {
         Assert::exception(
             function () use ($method) {
-                IteraFn::{$method}();
+                Tofu::{$method}();
             },
             BadMethodCallException::class,
             $message,

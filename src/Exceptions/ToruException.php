@@ -8,8 +8,6 @@ use Throwable;
 
 /**
  * Base interface for all exceptions thrown by Toru.
- *
- * @author Andrej Rypak <xrypak@gmail.com>
  */
 interface ToruException extends Throwable
 {

@@ -7,9 +7,6 @@ namespace Dakujem\Toru\Exceptions;
 use RuntimeException;
 use Throwable;
 
-/**
- * @author Andrej Rypák (dakujem) <xrypak@gmail.com>
- */
 final class NoMatchingElementFound extends RuntimeException implements IndicatesExceptionalCase
 {
     public iterable $input;

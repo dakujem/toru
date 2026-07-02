@@ -3,16 +3,16 @@
 declare(strict_types=1);
 
 use Dakujem\Toru\Itera;
-use Dakujem\Toru\IteraFn;
+use Dakujem\Toru\Tofu;
 use Tester\Assert;
 
 
 $sequence = range(51,100);
 $array = $sequence
-        |> IteraFn::filter(fn($i) => 0 == $i % 2) // even numbers only
-        |> IteraFn::reindex(fn($i) => $i)
-        |> IteraFn::limit(10)
-        |> IteraFn::toArray();
+        |> Tofu::filter(fn($i) => 0 == $i % 2) // even numbers only
+        |> Tofu::reindex(fn($i) => $i)
+        |> Tofu::limit(10)
+        |> Tofu::toArray();
 
 Assert::same([
     52 => 52,

@@ -20,10 +20,8 @@ use Traversable;
  * Methods returning `iterable` are lazy: the actual operations are done upon the subsequent iteration.
  *
  * The doc comments in class make references to `nikic/iter` package that does the same thing in certain cases,
- * but has somewhat cumbersome interface, but provides more functions for some other scenarios (e.g. `iter\slice`, `iter\take`, `iter\drop`).
+ * but has a somewhat cumbersome interface, but provides more functions for some other scenarios (e.g. `iter\slice`, `iter\take`, `iter\drop`).
  * @link https://github.com/nikic/iter
- *
- * @author Andrej Rypák (dakujem) <xrypak@gmail.com>
  */
 class Itera
 {
@@ -196,7 +194,7 @@ class Itera
     }
 
     /**
-     * Limits an iterable to a certain amount of elements.
+     * Limits an iterable to a certain number of elements.
      *
      * Note: Equivalent to `iter\take`.
      */
@@ -215,15 +213,15 @@ class Itera
     }
 
     /**
-     * Omits a certain amount of elements from the beginning of an iterable.
+     * Omits a certain number of elements from the beginning of an iterable.
      *
      * Note: Equivalent to `iter\drop`.
      */
-    final public static function omit(iterable $input, int $omit): iterable
+    final public static function omit(iterable $input, int $count): iterable
     {
         $i = 0;
         foreach ($input as $key => $value) {
-            if ($i++ >= $omit) {
+            if ($i++ >= $count) {
                 yield $key => $value;
             }
         }

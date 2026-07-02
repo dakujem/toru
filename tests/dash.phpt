@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Dakujem\Toru\Dash;
-use Dakujem\Toru\IteraFn;
+use Dakujem\Toru\Tofu;
 use Dakujem\Toru\Pipeline;
 use Tester\Assert;
 use Tester\Environment;
@@ -52,19 +52,19 @@ $expectSum = 13_000;
 (function () use ($collection, $predicate, $mapper, $reducer, $initial, $expectArray, $expectSum) {
     $result = Pipeline::through(
         $collection,
-        IteraFn::filter($predicate),
-        IteraFn::apply($mapper),
-        IteraFn::valuesOnly(),
-        IteraFn::toArray(),
+        Tofu::filter($predicate),
+        Tofu::apply($mapper),
+        Tofu::valuesOnly(),
+        Tofu::toArray(),
     );
     Assert::same($expectArray, $result);
 
     $sum = Pipeline::through(
         $collection,
-        IteraFn::filter($predicate),
-        IteraFn::apply($mapper),
-        IteraFn::valuesOnly(),
-        IteraFn::reduce($reducer, $initial),
+        Tofu::filter($predicate),
+        Tofu::apply($mapper),
+        Tofu::valuesOnly(),
+        Tofu::reduce($reducer, $initial),
     );
     Assert::same($expectSum, $sum);
 })();
@@ -98,4 +98,8 @@ $expectSum = 13_000;
 (function () use ($collection, $predicate, $mapper, $reducer, $initial, $expectArray, $expectSum) {
     Assert::type(Iterator::class, Dash::collect([])->toIterator());
     Assert::type(Traversable::class, Dash::collect([])->ensureTraversable());
+
+    // The same aggregates are reachable through the `Tofu` partially applied form.
+    Assert::type(Iterator::class, (Tofu::toIterator())([]));
+    Assert::type(Traversable::class, (Tofu::ensureTraversable())([]));
 })();

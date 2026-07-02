@@ -17,8 +17,6 @@ use Traversable;
  *
  * The result of the callable is returned as the inner iterator.
  * If the callable results in an array, it is wrapped into an ArrayIterator.
- *
- * @author Andrej Rypak <xrypak@gmail.com>
  */
 final class Regenerator implements IteratorAggregate
 {

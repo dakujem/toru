@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Dakujem\Toru\Dash;
 use Dakujem\Toru\Itera;
-use Dakujem\Toru\IteraFn;
+use Dakujem\Toru\Tofu;
 use Tester\Assert;
 use Tester\Environment;
 use Tests\Support\Call;
@@ -144,7 +144,7 @@ Environment::setup();
         },
         input: $input,
         description: 'Should map values and keys based on values and keys',
-        subjects: [Itera::class, IteraFn::class],
+        subjects: [Itera::class, Tofu::class],
     );
 
     $array = Itera::toArray($input);

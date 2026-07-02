@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Dakujem\Toru\Dash;
 use Dakujem\Toru\Itera;
 use Dakujem\Toru\IteraFn;
+use Dakujem\Toru\Tofu;
 use Tester\Assert;
 use Tester\Environment;
 
@@ -12,8 +13,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 Environment::setup();
 
 /**
- * In this test we look for `@method` doc-comment definitions in Dash and IteraFn classes.
- * All methods available via `Itera` class must be callable via `Dash` or `IteraFn`, with a coule of exceptions.
+ * In this test we verify that all methods available via the `Itera` class are implemented
+ * as real (non-magic) methods on the `Dash` and `Tofu`/`IteraFn` wrappers, with a couple of exceptions.
  */
 (function () {
     $iteraRef = new ReflectionClass(Itera::class);
@@ -28,50 +29,29 @@ Environment::setup();
 
     Assert::same(true, Itera::count($requiredMethods) > 10);
 
-    $extractMethods = function (string $class) {
-        $docComment = (new ReflectionClass($class))->getDocComment();
-        $matches = [];
-        $matchDynamicMethods = '/@method\s+(static\s+)?(.+?)\s+(.+?)\s*\(\s*(.*?)\s*\)/iu';
-        preg_match_all($matchDynamicMethods, $docComment, $matches, PREG_SET_ORDER);
-
-        $dynamicMethods = [];
-        foreach ($matches as $match) {
-            $isStatic = !empty($match[1]);
-            $returnType = $match[2];
-            $methodName = $match[3];
-            $parameters = $match[4];
-
-            $dynamicMethods[$methodName] = [
-                'isStatic' => $isStatic,
-                'returnType' => $returnType,
-                'methodName' => $methodName,
-                'parameters' => $parameters,
-            ];
-        }
-        return $dynamicMethods;
+    // Assert that the given class implements `$name` as a real, public method with the expected static-ness.
+    $assertImplemented = function (string $class, string $name, bool $static): void {
+        $ref = new ReflectionClass($class);
+        Assert::true($ref->hasMethod($name), "Method `$name` is NOT implemented in $class");
+        $method = $ref->getMethod($name);
+        Assert::true($method->isPublic(), "Method `$name` must be public in $class");
+        Assert::same($static, $method->isStatic(), "Method `$name` has unexpected static-ness in $class");
     };
 
-    // Dash
-    $dashMethods = $extractMethods(Dash::class);
+    // Dash exposes instance methods. `make`/`produce` are unsupported (they only produce a hint),
+    // and `ensureTraversable` returns the wrapper itself rather than forwarding directly.
     $allowedExceptions = [
         'make',
         'produce',
-        'ensureTraversable',
     ];
     foreach ($requiredMethods as $m) {
         if (in_array($m, $allowedExceptions)) {
             continue;
         }
-        // This is always true, for any method name, because of `__call`, rendering the test mostly useless.
-        Assert::true(is_callable([new Dash([]), $m]));
-
-        $method = $dashMethods[$m] ?? null;
-        Assert::notNull($method, "Method `$m` is NOT type-hinted in the doc-comment for " . Dash::class);
-        Assert::false($method['isStatic']);
+        $assertImplemented(Dash::class, $m, static: false);
     }
 
-    // IteraFn
-    $fnMethods = $extractMethods(IteraFn::class);
+    // Tofu (and the deprecated IteraFn alias) expose static factory methods.
     $allowedPartiallyAppliedExceptions = [
         'make',
         'produce',
@@ -80,11 +60,7 @@ Environment::setup();
         if (in_array($m, $allowedPartiallyAppliedExceptions)) {
             continue;
         }
-        // This is always true, for any method name, because of `__callStatic`, rendering the test mostly useless.
-        Assert::true(is_callable(sprintf('%s::%s', IteraFn::class, $m)));
-
-        $method = $fnMethods[$m] ?? null;
-        Assert::notNull($method, "Method `$m` is NOT type-hinted in the doc-comment for " . IteraFn::class);
-        Assert::true($method['isStatic']);
+        $assertImplemented(Tofu::class, $m, static: true);
+        $assertImplemented(IteraFn::class, $m, static: true);
     }
 })();
