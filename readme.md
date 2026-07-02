@@ -365,7 +365,7 @@ fn(mixed $value, mixed $key): bool
 use Dakujem\Toru\Itera;
 
 Itera::limit(iterable $input, int $limit): iterable
-Itera::omit(iterable $input, int $omit): iterable
+Itera::omit(iterable $input, int $count): iterable
 Itera::slice(iterable $input, int $offset, int $limit): iterable
 ```
 
@@ -375,9 +375,9 @@ or use `slice` to combine both `omit` and `limit` into a single call.
 Keys will be preserved.
 
 Passing zero or negative value to `$limit` yields an empty collection,  
-passing zero or negative values to `$omit`/`$offset` yields the full set.
+passing zero or negative values to `$count`/`$offset` yields the full set.
 
-> Note that when omitting, the selected number of elements (`$omit`/`$offset`)
+> Note that when omitting, the selected number of elements (`$count`/`$offset`)
 > is still iterated over but not yielded.
 
 Similar to `array_slice`, preserving the keys.
